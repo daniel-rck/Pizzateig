@@ -1,0 +1,20 @@
+node_modules
+dist
+dist-ssr
+*.local
+
+# Vite / PWA build output
+dev-dist
+
+# Cloudflare / Wrangler
+.wrangler
+
+# Editor / OS
+.DS_Store
+*.log
+.vscode/*
+!.vscode/extensions.json
+.idea
+
+# TypeScript build info
+*.tsbuildinfo
