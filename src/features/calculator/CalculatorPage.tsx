@@ -1,9 +1,9 @@
-import { Share2 } from "lucide-react";
+import { CalendarClock, CookingPot, Share2, Wheat } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { getRecipe, saveRecipe } from "../../lib/db/index.ts";
 import { shareDraft } from "../../lib/shareAction.ts";
 import { STYLES } from "../../lib/styles.ts";
-import { Button } from "../../lib/ui/index.ts";
+import { Button, SectionCard } from "../../lib/ui/index.ts";
 import { useDraft } from "../../state/DraftContext.tsx";
 import { draftToRecipe } from "../../state/recipeDraft.ts";
 import { BallWeight } from "./components/BallWeight.tsx";
@@ -60,17 +60,16 @@ export function CalculatorPage() {
   }, [draft]);
 
   return (
-    <div className="space-y-6 pb-44">
+    <div className="space-y-4 pb-44">
       {imported ? (
         <ImportBanner onSave={() => setSaveOpen(true)} onDismiss={dismissImport} />
       ) : null}
 
-      <section>
-        <h2 className="mb-2 text-sm font-medium text-fg-muted">Stil</h2>
+      <SectionCard title="Stil" icon={<CookingPot size={16} />}>
         <StyleChips value={draft.style} onChange={setStyle} />
-      </section>
+      </SectionCard>
 
-      <section className="space-y-4">
+      <SectionCard title="Menge" icon={<Wheat size={16} />} className="space-y-4">
         <Stepper
           label="Teiglinge"
           value={draft.ballCount}
@@ -84,10 +83,9 @@ export function CalculatorPage() {
           presets={STYLES[draft.style].ballPresetsG}
           onChange={(v) => update({ ballWeightG: v })}
         />
-      </section>
+      </SectionCard>
 
-      <section>
-        <h2 className="mb-2 text-sm font-medium text-fg-muted">Gärplan</h2>
+      <SectionCard title="Gärplan" icon={<CalendarClock size={16} />}>
         <FermentPlan
           draft={draft}
           onSelectPreset={(config) => {
@@ -96,7 +94,7 @@ export function CalculatorPage() {
           }}
           onCustomChange={setFerment}
         />
-      </section>
+      </SectionCard>
 
       <Feintuning
         draft={draft}

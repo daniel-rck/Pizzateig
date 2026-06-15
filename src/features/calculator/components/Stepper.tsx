@@ -34,7 +34,7 @@ export function Stepper({ label, value, min, max, step, format, onChange }: Step
           aria-label={`${label} verringern`}
           disabled={value <= min}
           onClick={() => change(value - step)}
-          className="flex h-11 w-11 items-center justify-center rounded-full border border-border bg-surface-muted text-fg transition-colors hover:bg-surface-sunken disabled:opacity-40"
+          className="flex h-11 w-11 items-center justify-center rounded-full border border-border bg-surface-muted text-fg transition-[background-color,transform] duration-[var(--duration-fast)] ease-[var(--ease-out-quart)] hover:bg-surface-sunken active:scale-90 disabled:opacity-40 disabled:active:scale-100"
         >
           <Minus size={20} aria-hidden="true" />
         </button>
@@ -46,7 +46,7 @@ export function Stepper({ label, value, min, max, step, format, onChange }: Step
           aria-label={`${label} erhöhen`}
           disabled={value >= max}
           onClick={() => change(value + step)}
-          className="flex h-11 w-11 items-center justify-center rounded-full border border-border bg-surface-muted text-fg transition-colors hover:bg-surface-sunken disabled:opacity-40"
+          className="flex h-11 w-11 items-center justify-center rounded-full border border-border bg-surface-muted text-fg transition-[background-color,transform] duration-[var(--duration-fast)] ease-[var(--ease-out-quart)] hover:bg-surface-sunken active:scale-90 disabled:opacity-40 disabled:active:scale-100"
         >
           <Plus size={20} aria-hidden="true" />
         </button>

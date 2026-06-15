@@ -37,14 +37,19 @@
   --color-accent-800: oklch(0.4 0.13 var(--accent-h));
   --color-accent-900: oklch(0.3 0.1 var(--accent-h));
 
-  /* ── Surfaces ──────────────────────────────────────────── */
-  --color-surface: oklch(1 0 0);
-  --color-surface-muted: oklch(0.97 0 0);
-  --color-surface-sunken: oklch(0.94 0 0);
-  --color-border: oklch(0.88 0 0);
-  --color-fg: oklch(0.18 0 0);
-  --color-fg-muted: oklch(0.45 0 0);
-  --color-fg-subtle: oklch(0.6 0 0);
+  /* ── Crust accent — warm amber companion to the orange accent ── */
+  --color-accent-warm: oklch(0.7 0.16 70);
+
+  /* ── Surfaces ──────────────────────────────────────────────────
+   * Faintly warm-tinted (hue 65, tiny chroma) so the app reads like
+   * warm paper / dough rather than cold grey. Kept very subtle. */
+  --color-surface: oklch(0.995 0.004 65);
+  --color-surface-muted: oklch(0.972 0.006 65);
+  --color-surface-sunken: oklch(0.945 0.008 65);
+  --color-border: oklch(0.885 0.008 65);
+  --color-fg: oklch(0.2 0.01 65);
+  --color-fg-muted: oklch(0.46 0.012 65);
+  --color-fg-subtle: oklch(0.6 0.01 65);
 
   /* ── Semantic ──────────────────────────────────────────── */
   --color-success: oklch(0.65 0.17 150);
@@ -62,17 +67,53 @@
   --radius-md: 0.5rem;
   --radius-lg: 0.75rem;
   --radius-xl: 1rem;
+  --radius-2xl: 1.25rem;
 
-  /* ── Shadows ───────────────────────────────────────────── */
-  --shadow-sm: 0 1px 2px 0 oklch(0 0 0 / 0.05);
-  --shadow-md: 0 4px 6px -1px oklch(0 0 0 / 0.1), 0 2px 4px -2px oklch(0 0 0 / 0.1);
-  --shadow-lg: 0 10px 15px -3px oklch(0 0 0 / 0.1), 0 4px 6px -4px oklch(0 0 0 / 0.1);
+  /* ── Shadows — warm-tinted (hue 65) instead of neutral black ─── */
+  --shadow-sm: 0 1px 2px 0 oklch(0.3 0.04 65 / 0.06);
+  --shadow-md: 0 4px 6px -1px oklch(0.3 0.04 65 / 0.1), 0 2px 4px -2px oklch(0.3 0.04 65 / 0.1);
+  --shadow-lg: 0 10px 15px -3px oklch(0.3 0.04 65 / 0.12), 0 4px 6px -4px oklch(0.3 0.04 65 / 0.1);
+  --shadow-warm: 0 8px 24px -6px oklch(0.55 0.18 50 / 0.18);
 
   /* ── Animation ─────────────────────────────────────────── */
   --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
   --duration-fast: 150ms;
   --duration-base: 250ms;
   --duration-slow: 400ms;
+
+  /* ── Keyframe animations (utilities: animate-fade-in, …) ─── */
+  --animate-fade-in: fade-in var(--duration-base) var(--ease-out-quart);
+  --animate-slide-up-fade: slide-up-fade var(--duration-base) var(--ease-out-quart);
+  --animate-pop-in: pop-in var(--duration-base) var(--ease-out-quart);
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  @keyframes slide-up-fade {
+    from {
+      opacity: 0;
+      transform: translateY(0.5rem);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes pop-in {
+    from {
+      opacity: 0;
+      transform: scale(0.96);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
 }
 
 /*
@@ -85,25 +126,25 @@
  */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --color-surface: oklch(0.18 0 0);
-    --color-surface-muted: oklch(0.22 0 0);
-    --color-surface-sunken: oklch(0.14 0 0);
-    --color-border: oklch(0.3 0 0);
-    --color-fg: oklch(0.95 0 0);
-    --color-fg-muted: oklch(0.7 0 0);
-    --color-fg-subtle: oklch(0.55 0 0);
+    --color-surface: oklch(0.185 0.006 65);
+    --color-surface-muted: oklch(0.225 0.008 65);
+    --color-surface-sunken: oklch(0.145 0.006 65);
+    --color-border: oklch(0.31 0.01 65);
+    --color-fg: oklch(0.95 0.006 65);
+    --color-fg-muted: oklch(0.71 0.01 65);
+    --color-fg-subtle: oklch(0.56 0.01 65);
     color-scheme: dark;
   }
 }
 
 :root[data-theme="dark"] {
-  --color-surface: oklch(0.18 0 0);
-  --color-surface-muted: oklch(0.22 0 0);
-  --color-surface-sunken: oklch(0.14 0 0);
-  --color-border: oklch(0.3 0 0);
-  --color-fg: oklch(0.95 0 0);
-  --color-fg-muted: oklch(0.7 0 0);
-  --color-fg-subtle: oklch(0.55 0 0);
+  --color-surface: oklch(0.185 0.006 65);
+  --color-surface-muted: oklch(0.225 0.008 65);
+  --color-surface-sunken: oklch(0.145 0.006 65);
+  --color-border: oklch(0.31 0.01 65);
+  --color-fg: oklch(0.95 0.006 65);
+  --color-fg-muted: oklch(0.71 0.01 65);
+  --color-fg-subtle: oklch(0.56 0.01 65);
   color-scheme: dark;
 }
 
@@ -120,4 +161,71 @@ body {
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+}
+
+/*
+ * Custom range slider ("slider-warm"): the track is filled with the accent up
+ * to the thumb (driven by the --pct variable set inline), with a soft custom
+ * thumb. Falls back gracefully across WebKit/Blink and Firefox.
+ */
+.slider-warm {
+  --pct: 0%;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 0.5rem;
+  width: 100%;
+  border-radius: 9999px;
+  background: linear-gradient(
+    to right,
+    var(--color-accent-500) 0%,
+    var(--color-accent-600) var(--pct),
+    var(--color-surface-sunken) var(--pct),
+    var(--color-surface-sunken) 100%
+  );
+  cursor: pointer;
+}
+.slider-warm::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 1.25rem;
+  width: 1.25rem;
+  border-radius: 9999px;
+  background: var(--color-surface);
+  border: 2px solid var(--color-accent-600);
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--duration-fast) var(--ease-out-quart);
+}
+.slider-warm::-webkit-slider-thumb:active {
+  transform: scale(1.15);
+}
+.slider-warm::-moz-range-thumb {
+  height: 1.25rem;
+  width: 1.25rem;
+  border-radius: 9999px;
+  background: var(--color-surface);
+  border: 2px solid var(--color-accent-600);
+  box-shadow: var(--shadow-sm);
+}
+.slider-warm:focus-visible {
+  outline: 2px solid var(--color-accent-500);
+  outline-offset: 2px;
+}
+
+/*
+ * Respect "reduce motion": neutralise all keyframe animations and transitions
+ * so the warm-polish entrances/expansions never cause discomfort.
+ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    /* biome-ignore lint/complexity/noImportantStyles: must override every utility/inline transition for accessibility */
+    animation-duration: 0.01ms !important;
+    /* biome-ignore lint/complexity/noImportantStyles: must override every utility/inline transition for accessibility */
+    animation-iteration-count: 1 !important;
+    /* biome-ignore lint/complexity/noImportantStyles: must override every utility/inline transition for accessibility */
+    transition-duration: 0.01ms !important;
+    /* biome-ignore lint/complexity/noImportantStyles: must override every utility/inline transition for accessibility */
+    scroll-behavior: auto !important;
+  }
 }

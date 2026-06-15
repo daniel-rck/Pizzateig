@@ -1,4 +1,4 @@
-import { Calculator, NotebookText } from "lucide-react";
+import { Calculator, NotebookText, Pizza } from "lucide-react";
 import { Outlet } from "react-router-dom";
 import { ROUTES } from "./lib/routes.ts";
 import { AppShell, type NavItem } from "./lib/ui/index.ts";
@@ -13,7 +13,11 @@ const NAV_ITEMS: NavItem[] = [
 export function App() {
   return (
     <DraftProvider>
-      <AppShell title="pizzateig" navItems={NAV_ITEMS}>
+      <AppShell
+        title="pizzateig"
+        logo={<Pizza size={22} aria-hidden="true" />}
+        navItems={NAV_ITEMS}
+      >
         <Outlet />
       </AppShell>
     </DraftProvider>

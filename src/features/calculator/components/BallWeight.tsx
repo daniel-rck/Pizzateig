@@ -1,4 +1,5 @@
 import { tick } from "../../../lib/haptics.ts";
+import { Chip } from "../../../lib/ui/index.ts";
 import { Stepper } from "./Stepper.tsx";
 
 type BallWeightProps = {
@@ -15,24 +16,18 @@ export function BallWeight({ value, presets, onChange }: BallWeightProps) {
         {presets.map((preset) => {
           const active = preset === value;
           return (
-            <button
+            <Chip
               key={preset}
-              type="button"
-              aria-pressed={active}
+              active={active}
               onClick={() => {
                 if (!active) {
                   tick();
                   onChange(preset);
                 }
               }}
-              className={`rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
-                active
-                  ? "bg-accent-600 text-white"
-                  : "bg-surface-muted text-fg-muted hover:bg-surface-sunken"
-              }`}
             >
               {preset} g
-            </button>
+            </Chip>
           );
         })}
       </fieldset>

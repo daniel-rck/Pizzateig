@@ -45,11 +45,11 @@ export function SaveDialog({ open, initialName, isUpdate, onSave, onClose }: Sav
         type="button"
         aria-label="Schließen"
         onClick={onClose}
-        className="absolute inset-0 cursor-default bg-black/40"
+        className="absolute inset-0 animate-fade-in cursor-default bg-black/40 backdrop-blur-sm"
       />
       <form
         onSubmit={submit}
-        className="relative z-10 w-full max-w-sm rounded-xl border border-border bg-surface p-5 shadow-lg"
+        className="relative z-10 w-full max-w-sm animate-pop-in rounded-2xl border border-border bg-surface p-5 shadow-warm"
         aria-labelledby={`${id}-title`}
       >
         <h2 id={`${id}-title`} className="text-base font-semibold">
@@ -64,7 +64,7 @@ export function SaveDialog({ open, initialName, isUpdate, onSave, onClose }: Sav
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="z. B. Napoletana 65 %"
-          className="w-full rounded-md border border-border bg-surface-muted px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-accent-500"
+          className="w-full rounded-lg border border-border bg-surface-muted px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-accent-500"
         />
         <div className="mt-5 flex justify-end gap-2">
           <Button type="button" variant="ghost" onClick={onClose}>

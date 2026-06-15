@@ -5,20 +5,94 @@ function cn(...parts: Array<string | false | null | undefined>): string {
 }
 
 // ── Card ──────────────────────────────────────────────────────────────
-export type CardProps = HTMLAttributes<HTMLDivElement>;
+export type CardProps = HTMLAttributes<HTMLDivElement> & {
+  /** Adds a subtle hover-lift for cards that act as a link/target. */
+  interactive?: boolean;
+};
 
 export const Card = forwardRef<HTMLDivElement, CardProps>(function Card(
-  { className, children, ...rest },
+  { className, interactive, children, ...rest },
   ref,
 ) {
   return (
     <div
       ref={ref}
-      className={cn("rounded-lg border border-border bg-surface p-4 shadow-sm", className)}
+      className={cn(
+        "rounded-xl border border-border bg-surface p-4 shadow-sm",
+        interactive &&
+          "transition-[transform,box-shadow] duration-[var(--duration-base)] ease-[var(--ease-out-quart)] hover:-translate-y-0.5 hover:shadow-md",
+        className,
+      )}
       {...rest}
     >
       {children}
     </div>
+  );
+});
+
+// ── SectionCard ───────────────────────────────────────────────────────
+// One consistent wrapper for every calculator section so the page reads as
+// a single, cohesive set of cards ("aus einem Guss") instead of a flat list.
+export type SectionCardProps = HTMLAttributes<HTMLElement> & {
+  title?: ReactNode;
+  hint?: ReactNode;
+  /** Optional leading icon shown next to the title. */
+  icon?: ReactNode;
+};
+
+export function SectionCard({ title, hint, icon, className, children, ...rest }: SectionCardProps) {
+  return (
+    <section
+      className={cn("rounded-xl border border-border bg-surface p-4 shadow-sm", className)}
+      {...rest}
+    >
+      {title ? (
+        <div className="mb-3 flex items-baseline justify-between gap-3">
+          <h2 className="flex items-center gap-2 text-sm font-semibold tracking-tight text-fg">
+            {icon ? (
+              <span className="text-accent-600" aria-hidden="true">
+                {icon}
+              </span>
+            ) : null}
+            {title}
+          </h2>
+          {hint ? <span className="text-xs text-fg-muted">{hint}</span> : null}
+        </div>
+      ) : null}
+      {children}
+    </section>
+  );
+}
+
+// ── Chip ──────────────────────────────────────────────────────────────
+// The single selectable pill used everywhere (style, ball weight, yeast
+// type). Labels wrap fully and are never clipped or truncated.
+export type ChipProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, "type"> & {
+  active?: boolean;
+};
+
+export const Chip = forwardRef<HTMLButtonElement, ChipProps>(function Chip(
+  { className, active = false, children, ...rest },
+  ref,
+) {
+  return (
+    <button
+      ref={ref}
+      type="button"
+      aria-pressed={active}
+      className={cn(
+        "rounded-full px-4 py-2 text-sm font-medium whitespace-normal text-center",
+        "transition-[background-color,color,box-shadow,transform] duration-[var(--duration-fast)] ease-[var(--ease-out-quart)]",
+        "active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-500 focus-visible:ring-offset-2 focus-visible:ring-offset-surface",
+        active
+          ? "bg-gradient-to-br from-accent-500 to-accent-600 text-white shadow-sm"
+          : "bg-surface-muted text-fg-muted hover:bg-surface-sunken hover:text-fg",
+        className,
+      )}
+      {...rest}
+    >
+      {children}
+    </button>
   );
 });
 
@@ -108,7 +182,7 @@ export type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
 
 const BUTTON_VARIANT: Record<ButtonVariant, string> = {
   primary:
-    "bg-accent-600 text-white hover:bg-accent-700 focus-visible:ring-accent-500 disabled:bg-accent-300",
+    "bg-gradient-to-br from-accent-500 to-accent-600 text-white shadow-sm hover:shadow-md hover:brightness-105 focus-visible:ring-accent-500 disabled:from-accent-300 disabled:to-accent-300 disabled:shadow-none",
   secondary:
     "bg-surface-muted text-fg hover:bg-surface-sunken focus-visible:ring-accent-500 border border-border",
   ghost: "bg-transparent text-fg hover:bg-surface-sunken focus-visible:ring-accent-500",
@@ -130,9 +204,10 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
       ref={ref}
       type={type}
       className={cn(
-        "inline-flex items-center justify-center gap-2 rounded-md font-medium transition-colors",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
-        "disabled:cursor-not-allowed",
+        "inline-flex items-center justify-center gap-2 rounded-lg font-medium",
+        "transition-[background-color,box-shadow,filter,transform] duration-[var(--duration-fast)] ease-[var(--ease-out-quart)] active:scale-[0.98]",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-surface",
+        "disabled:cursor-not-allowed disabled:active:scale-100",
         BUTTON_VARIANT[variant],
         BUTTON_SIZE[size],
         className,
