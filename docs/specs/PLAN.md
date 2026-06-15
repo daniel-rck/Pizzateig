@@ -10,6 +10,33 @@
 
 ---
 
+## Status (v1)
+
+Alle Phasen 0–7 umgesetzt; jede Phase endet grün (Biome + `tsc` strict +
+`bun test`, 44 Tests). Branch in dieser Umsetzung: `claude/leg-los-w5rhsc`.
+
+**Bewusste Entscheidungen / Abweichungen vom Plan** (web-base-Konvention:
+kleinste sinnvolle Wahl, dokumentiert):
+
+- **Q10-Widerspruch der Spec aufgelöst.** Die Prosa „`rate(4 °C) ≈ 0.063`"
+  passt nicht zur normativen Formel mit `Q10 = 2` (die `≈ 0.33` liefert). Die
+  Formel ist maßgeblich; Kommentar/Spec korrigiert, `Q10` bleibt dokumentierte
+  Stellschraube. Siehe `docs/specs/pizzateig.md §3.2`.
+- **Persistenz unter `src/lib/db/`** statt `src/db/` — folgt dem web-base-
+  Scaffold (`db.ts` als bearbeitbare Schema-Seam), CRUD in `recipes.ts`,
+  `useRecipes()` über `useLiveQuery`.
+- **`fake-indexeddb`** als Dev-Dependency für die CRUD-Tests.
+- **`workbox-routing`** für eine Navigation-Fallback-Route (Offline-Deep-Links)
+  und `not_found_handling = "single-page-application"` im Worker.
+- **`K` je Stil** aus kanonischen Raum-Temperatur-Referenzen verankert und
+  dokumentiert (`src/lib/styles.ts`); Napoletana exakt aus der Spec. Die
+  Plausibilisierung an 2–3 eigenen Backergebnissen bleibt als bewusst offener
+  DoD-Punkt (die Stellschraube `K` ist dafür vorgesehen).
+- **Cloudflare-Deploy** ist vorbereitet (`wrangler.toml`, `worker:deploy`),
+  aber nicht ausgeführt (keine Zugangsdaten in dieser Umgebung).
+
+---
+
 ## Phase 0 — Scaffold & Setup
 
 **Ziel:** lauffähiges web-base-Gerüst mit pizzateig-Identität.
