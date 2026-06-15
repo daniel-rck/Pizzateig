@@ -18,10 +18,12 @@ Alle Phasen 0–7 umgesetzt; jede Phase endet grün (Biome + `tsc` strict +
 **Bewusste Entscheidungen / Abweichungen vom Plan** (web-base-Konvention:
 kleinste sinnvolle Wahl, dokumentiert):
 
-- **Q10-Widerspruch der Spec aufgelöst.** Die Prosa „`rate(4 °C) ≈ 0.063`"
-  passt nicht zur normativen Formel mit `Q10 = 2` (die `≈ 0.33` liefert). Die
-  Formel ist maßgeblich; Kommentar/Spec korrigiert, `Q10` bleibt dokumentierte
-  Stellschraube. Siehe `docs/specs/pizzateig.md §3.2`.
+- **Q10-Widerspruch der Spec aufgelöst (erfahrungsbasiert).** Formel (`Q10 = 2`
+  → `rate(4 °C) ≈ 0.33`) und Prosa (`≈ 0.063`) widersprachen sich. Maßgeblich
+  ist der praxisnähere Wert: Kühlgare bei 4 °C bremst die Hefe drastisch →
+  `Q10 = 5.6`, sodass `rate(4 °C) ≈ 0.063`. `Q10`/`K` bleiben dokumentierte
+  Stellschrauben (Trade-off: warm überzeichnet → bei warmer Führung Richtung 2
+  senken). Siehe `docs/specs/pizzateig.md §3.2`.
 - **Persistenz unter `src/lib/db/`** statt `src/db/` — folgt dem web-base-
   Scaffold (`db.ts` als bearbeitbare Schema-Seam), CRUD in `recipes.ts`,
   `useRecipes()` über `useLiveQuery`.

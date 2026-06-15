@@ -26,14 +26,15 @@ describe("fermentRate (Q10)", () => {
     expect(fermentRate(T_REF)).toBe(1);
   });
 
-  it("doubles per +10 °C and halves per −10 °C", () => {
+  it("scales by ×Q10 per +10 °C and ÷Q10 per −10 °C", () => {
     expect(fermentRate(T_REF + 10)).toBeCloseTo(Q10, 10);
     expect(fermentRate(T_REF - 10)).toBeCloseTo(1 / Q10, 10);
   });
 
-  it("at 4 °C slows to ~0.33× of a room hour (cold gare contributes less)", () => {
-    // Normative formula with Q10 = 2: 2^((4-20)/10) ≈ 0.3299.
-    expect(fermentRate(4)).toBeCloseTo(0.33, 2);
+  it("at 4 °C collapses to ~0.063× of a room hour (cold gare barely raises)", () => {
+    // Q10 = 5.6 is calibrated so 5.6^((4-20)/10) ≈ 0.063.
+    expect(fermentRate(4)).toBeCloseTo(0.063, 2);
+    expect(fermentRate(4)).toBeLessThan(0.1);
   });
 });
 

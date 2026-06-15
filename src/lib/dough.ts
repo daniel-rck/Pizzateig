@@ -8,8 +8,21 @@ import type { FermentConfig, YeastConfig, YeastType } from "../types/recipe.ts";
 
 // ── Q10 yeast kinetics (spec §3.2) ──────────────────────────────────────
 
-/** Q10 trieb rate doubles per ~10 °C (baker's rule of thumb). */
-export const Q10 = 2;
+/**
+ * Temperature sensitivity of the trieb rate (rate scales ×Q10 per +10 °C).
+ *
+ * Calibrated to real cold-ferment experience rather than the textbook baker's
+ * Q10 of ~2: at fridge temperature the rate must collapse, not merely third.
+ * Q10 = 5.6 gives `fermentRate(4 °C) ≈ 0.063` — i.e. an hour in the fridge
+ * contributes only ~6 % of a 20 °C hour — matching the spec's stated intuition
+ * that cold gare barely raises the dough. (A plain Q10 of 2 would give ≈0.33,
+ * which overstates how much a cold ferment drives rise.)
+ *
+ * `Q10` and the per-style `K` are the two documented, tunable knobs. Note the
+ * trade-off: this value is tuned for the cold range; it consequently overstates
+ * warm-range sensitivity, so lower it toward ~2 if you mostly ferment warm.
+ */
+export const Q10 = 5.6;
 
 /** Reference temperature in °C; `fermentRate(T_REF) === 1`. */
 export const T_REF = 20;
@@ -23,14 +36,9 @@ export function fermentRate(tempC: number): number {
 }
 
 /**
- * Effective fermentation hours across all phases.
- *
- * With the spec's baker Q10 = 2 / T_REF = 20, cold gare still slows markedly:
- * `fermentRate(4 °C) ≈ 0.33`, so an hour in the fridge counts ~a third of a
- * room hour. (The spec's prose figure of ≈0.063 is inconsistent with Q10 = 2 —
- * it would require Q10 ≈ 5.6 — so the normative formula is followed here.)
- * `Q10` and the per-style `K` are the two documented, tunable knobs; raise
- * `Q10` if cold ferments should contribute even less (spec §3.2 tunability).
+ * Effective fermentation hours across all phases. Cold hours contribute little
+ * because `fermentRate(4 °C) ≈ 0.063` (spec §3.2): a long fridge proof needs
+ * markedly more yeast than a short warm one.
  */
 export function effectiveHours(ferment: FermentConfig): number {
   const coldHours = Math.max(0, ferment.coldHours);
