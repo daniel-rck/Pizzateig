@@ -11,7 +11,7 @@ describe("App shell", () => {
     );
     render(<RouterProvider router={router} />);
 
-    expect(screen.getByRole("heading", { name: "pizzateig" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Pizzateig" })).toBeInTheDocument();
     expect(screen.getAllByRole("navigation", { name: "Hauptnavigation" }).length).toBeGreaterThan(
       0,
     );

@@ -14,7 +14,7 @@ export function App() {
   return (
     <DraftProvider>
       <AppShell
-        title="pizzateig"
+        title="Pizzateig"
         logo={<Pizza size={22} aria-hidden="true" />}
         navItems={NAV_ITEMS}
       >
