@@ -90,7 +90,8 @@ const T_REF = 20;  // Referenztemperatur in °C
 const rate = (tempC: number) => Math.pow(Q10, (tempC - T_REF) / 10);
 
 // Wirksame Gärstunden über alle Phasen (Raum + Kühl).
-// Bei 4 °C ist rate ≈ 0.063 → Kühlgare trägt kaum zum Trieb bei (korrekt).
+// Bei 4 °C ist rate = 2^((4-20)/10) ≈ 0.33 → eine Kühlstunde zählt rund ein
+// Drittel einer Raumstunde, Kühlgare trägt also gedämpft bei.
 const effHours =
   (totalHours - coldHours) * rate(roomTempC) +
   coldHours * rate(coldTempC);
@@ -113,6 +114,12 @@ Jeder `DoughStyle` bringt sein eigenes `K` mit.
 **Tunability (Kür, nicht Pflicht):** `Q10` und `K` sind die einzigen zwei
 Knöpfe. Beide als dokumentierte Konstanten, kein verstreuter Magic Value.
 Wer will, justiert `K` an eigenen Backergebnissen nach.
+
+**Decision — `Q10` vs. die 0.063-Notiz:** Eine frühere Fassung dieser Spec
+behauptete `rate(4 °C) ≈ 0.063`. Das ist mit `Q10 = 2 / T_REF = 20` nicht
+vereinbar (es bräuchte `Q10 ≈ 5.6`). Die normative Formel (`Q10 = 2`) wird
+umgesetzt, also `rate(4 °C) ≈ 0.33`. Wer die Kühlgare stärker dämpfen will,
+hebt die dokumentierte Konstante `Q10` an — genau dafür ist sie ein Knopf.
 
 ## 4. UI / UX — Mobile First
 
