@@ -1,18 +1,15 @@
 import { type DBSchema, type IDBPDatabase, openDB } from "idb";
+import type { Recipe } from "../../types/recipe.ts";
 
-// Replace this interface with your app's schema. Each store gets a
-// `key`/`value` shape and (optionally) named indexes.
 export interface AppSchema extends DBSchema {
-  // Example:
-  // tenants: {
-  //   key: string;
-  //   value: { id: string; name: string; createdAt: number };
-  //   indexes: { byName: string };
-  // };
-  [storeName: string]: { key: IDBValidKey; value: unknown };
+  recipes: {
+    key: string;
+    value: Recipe;
+    indexes: { byUpdatedAt: number };
+  };
 }
 
-const DB_NAME = "app";
+const DB_NAME = "pizzateig";
 const DB_VERSION = 1;
 
 let dbPromise: Promise<IDBPDatabase<AppSchema>> | null = null;
@@ -21,12 +18,10 @@ export function getDB(): Promise<IDBPDatabase<AppSchema>> {
   if (!dbPromise) {
     dbPromise = openDB<AppSchema>(DB_NAME, DB_VERSION, {
       upgrade(db, _oldVersion, _newVersion, _tx) {
-        // Create stores and indexes here. Example:
-        // if (!db.objectStoreNames.contains("tenants")) {
-        //   const store = db.createObjectStore("tenants", { keyPath: "id" });
-        //   store.createIndex("byName", "name");
-        // }
-        void db;
+        if (!db.objectStoreNames.contains("recipes")) {
+          const store = db.createObjectStore("recipes", { keyPath: "id" });
+          store.createIndex("byUpdatedAt", "updatedAt");
+        }
       },
     });
   }
