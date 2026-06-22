@@ -50,7 +50,7 @@ export function Feintuning({ draft, resolvedYeastPct, onUpdate, onYeast }: Feint
         className="grid transition-[grid-template-rows] duration-[var(--duration-base)] ease-[var(--ease-out-quart)]"
         style={{ gridTemplateRows: open ? "1fr" : "0fr" }}
       >
-        <div className="overflow-hidden">
+        <div className="overflow-hidden" inert={!open}>
           <div className="space-y-5 border-t border-border p-4">
             <Slider
               label="Hydration"

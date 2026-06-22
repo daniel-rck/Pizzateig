@@ -206,6 +206,18 @@ body {
   border: 2px solid var(--color-accent-600);
   box-shadow: var(--shadow-sm);
 }
+/* Firefox paints the track/fill via dedicated pseudo-elements, not the input
+ * background — so style them explicitly (the --pct gradient is WebKit-only). */
+.slider-warm::-moz-range-track {
+  height: 0.5rem;
+  border-radius: 9999px;
+  background: var(--color-surface-sunken);
+}
+.slider-warm::-moz-range-progress {
+  height: 0.5rem;
+  border-radius: 9999px;
+  background: linear-gradient(to right, var(--color-accent-500), var(--color-accent-600));
+}
 .slider-warm:focus-visible {
   outline: 2px solid var(--color-accent-500);
   outline-offset: 2px;

@@ -108,7 +108,7 @@ export function FermentPlan({ draft, onSelectPreset, onCustomChange }: FermentPl
         className="grid transition-[grid-template-rows] duration-[var(--duration-base)] ease-[var(--ease-out-quart)]"
         style={{ gridTemplateRows: customOpen ? "1fr" : "0fr" }}
       >
-        <div className="overflow-hidden">
+        <div className="overflow-hidden" inert={!customOpen}>
           <div className="space-y-4 rounded-xl border border-border bg-surface-muted p-4">
             <Slider
               label="Raumstunden"
