@@ -36,12 +36,12 @@ export function ConfirmDialog({
         type="button"
         aria-label="Schließen"
         onClick={onClose}
-        className="absolute inset-0 cursor-default bg-black/40"
+        className="absolute inset-0 animate-fade-in cursor-default bg-black/40 backdrop-blur-sm"
       />
       <div
         role="alertdialog"
         aria-label={title}
-        className="relative z-10 w-full max-w-sm rounded-xl border border-border bg-surface p-5 shadow-lg"
+        className="relative z-10 w-full max-w-sm animate-pop-in rounded-2xl border border-border bg-surface p-5 shadow-warm"
       >
         <h2 className="text-base font-semibold">{title}</h2>
         <p className="mt-2 text-sm text-fg-muted">{message}</p>

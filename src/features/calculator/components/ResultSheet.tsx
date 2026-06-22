@@ -56,29 +56,43 @@ export function ResultSheet({
   return (
     <div className="fixed inset-x-0 bottom-16 z-30 md:bottom-0">
       <div className="container mx-auto max-w-4xl px-4 md:px-4">
-        <div className="overflow-hidden rounded-t-xl border border-border bg-surface/98 shadow-lg backdrop-blur">
+        <div className="overflow-hidden rounded-t-2xl border border-border border-b-0 bg-surface/90 shadow-warm backdrop-blur-md">
+          <div
+            aria-hidden="true"
+            className="h-1 w-full bg-gradient-to-r from-accent-500 to-accent-warm"
+          />
           <button
             type="button"
             aria-expanded={expanded}
             aria-label={expanded ? "Ergebnis einklappen" : "Ergebnis aufziehen"}
             onClick={() => setExpanded((e) => !e)}
-            className="flex w-full items-center justify-between gap-3 px-4 py-3"
+            className="flex w-full items-center justify-between gap-3 px-4 pt-2 pb-3"
           >
-            <span className="flex items-baseline gap-3 text-sm">
-              <span className="font-semibold">{formatGrams(amounts.totalDoughG)} Teig</span>
-              <span className="text-fg-muted">
-                {formatGrams(amounts.flourG)} Mehl · {formatGrams(amounts.waterG)} Wasser
+            <span className="flex flex-col items-stretch gap-1 text-left">
+              <span aria-hidden="true" className="mx-auto h-1 w-9 rounded-full bg-border" />
+              <span className="flex items-baseline gap-2">
+                <span className="text-xl font-bold tabular-nums tracking-tight text-fg">
+                  {formatGrams(amounts.totalDoughG)} Teig
+                </span>
+              </span>
+              <span className="flex flex-wrap gap-1.5 text-xs">
+                <span className="rounded-full bg-surface-sunken px-2 py-0.5 font-medium tabular-nums text-fg-muted">
+                  {formatGrams(amounts.flourG)} Mehl
+                </span>
+                <span className="rounded-full bg-surface-sunken px-2 py-0.5 font-medium tabular-nums text-fg-muted">
+                  {formatGrams(amounts.waterG)} Wasser
+                </span>
               </span>
             </span>
             <ChevronUp
-              size={18}
+              size={20}
               aria-hidden="true"
-              className={`shrink-0 transition-transform ${expanded ? "rotate-180" : ""}`}
+              className={`shrink-0 text-fg-muted transition-transform duration-[var(--duration-base)] ease-[var(--ease-out-quart)] ${expanded ? "rotate-180" : ""}`}
             />
           </button>
 
           {expanded ? (
-            <div className="max-h-[60vh] space-y-4 overflow-y-auto border-t border-border px-4 py-3 text-sm">
+            <div className="max-h-[60vh] animate-fade-in space-y-4 overflow-y-auto border-t border-border px-4 py-3 text-sm">
               <div>
                 <Row label="Gesamtteig" value={formatGrams(amounts.totalDoughG)} strong />
                 <Row label="Mehl" value={formatGrams(amounts.flourG)} />

@@ -5,7 +5,7 @@ import { removeRecipe, useRecipes } from "../../lib/db/index.ts";
 import { formatPercent } from "../../lib/format.ts";
 import { ROUTES } from "../../lib/routes.ts";
 import { STYLES } from "../../lib/styles.ts";
-import { Button, Card, EmptyState, PageHeader, Spinner } from "../../lib/ui/index.ts";
+import { Badge, Button, Card, EmptyState, PageHeader, Spinner } from "../../lib/ui/index.ts";
 import { useDraft } from "../../state/DraftContext.tsx";
 import type { Recipe } from "../../types/recipe.ts";
 import { ConfirmDialog } from "./components/ConfirmDialog.tsx";
@@ -39,17 +39,21 @@ export function RecipesPage() {
       ) : (
         <ul className="space-y-3">
           {recipes.map((recipe) => (
-            <li key={recipe.id}>
-              <Card className="flex items-center justify-between gap-3">
+            <li key={recipe.id} className="animate-fade-in">
+              <Card interactive className="flex items-center justify-between gap-3">
                 <button
                   type="button"
                   onClick={() => open(recipe)}
                   className="min-w-0 flex-1 text-left"
                 >
-                  <p className="truncate font-medium">{recipe.name}</p>
-                  <p className="mt-0.5 truncate text-sm text-fg-muted">
-                    {STYLES[recipe.style].label} · {recipe.ballCount} × {recipe.ballWeightG} g ·{" "}
-                    {formatPercent(recipe.hydration)}
+                  <p className="flex items-center gap-2 font-medium">
+                    <span className="truncate">{recipe.name}</span>
+                    <Badge variant="accent" className="shrink-0">
+                      {STYLES[recipe.style].label}
+                    </Badge>
+                  </p>
+                  <p className="mt-1 truncate text-sm tabular-nums text-fg-muted">
+                    {recipe.ballCount} × {recipe.ballWeightG} g · {formatPercent(recipe.hydration)}
                   </p>
                 </button>
                 <Button

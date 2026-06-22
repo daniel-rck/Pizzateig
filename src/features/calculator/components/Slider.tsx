@@ -1,4 +1,4 @@
-import { useId } from "react";
+import { type CSSProperties, useId } from "react";
 import { tick } from "../../../lib/haptics.ts";
 
 type SliderProps = {
@@ -15,6 +15,7 @@ type SliderProps = {
 export function Slider({ label, value, min, max, step, format, onChange }: SliderProps) {
   const id = useId();
   const display = format ? format(value) : String(value);
+  const pct = max > min ? ((value - min) / (max - min)) * 100 : 0;
 
   return (
     <div>
@@ -37,7 +38,8 @@ export function Slider({ label, value, min, max, step, format, onChange }: Slide
           tick(5);
           onChange(Number(e.target.value));
         }}
-        className="h-2 w-full cursor-pointer appearance-none rounded-full bg-surface-sunken accent-accent-600"
+        className="slider-warm"
+        style={{ "--pct": `${pct}%` } as CSSProperties}
       />
     </div>
   );
