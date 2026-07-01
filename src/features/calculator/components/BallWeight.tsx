@@ -12,7 +12,8 @@ type BallWeightProps = {
 export function BallWeight({ value, presets, onChange }: BallWeightProps) {
   return (
     <div className="space-y-3">
-      <fieldset className="flex flex-wrap gap-2" aria-label="Ballgewicht-Vorgaben">
+      <fieldset className="flex flex-wrap gap-2">
+        <legend className="sr-only">Ballgewicht-Vorgaben</legend>
         {presets.map((preset) => {
           const active = preset === value;
           return (

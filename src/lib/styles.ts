@@ -74,7 +74,7 @@ export const STYLES: Record<DoughStyle, StyleDefaults> = {
     k: 0.028,
   },
   custom: {
-    label: "Custom",
+    label: "Eigener Stil",
     hydration: 0.65,
     saltPct: 0.025,
     oilPct: 0.01,

@@ -1,5 +1,5 @@
 import { type FormEvent, useEffect, useId, useRef, useState } from "react";
-import { Button } from "../../../lib/ui/index.ts";
+import { Button, useFocusTrap } from "../../../lib/ui/index.ts";
 
 type SaveDialogProps = {
   open: boolean;
@@ -14,7 +14,10 @@ type SaveDialogProps = {
 export function SaveDialog({ open, initialName, isUpdate, onSave, onClose }: SaveDialogProps) {
   const id = useId();
   const inputRef = useRef<HTMLInputElement>(null);
+  const formRef = useRef<HTMLFormElement>(null);
   const [name, setName] = useState(initialName);
+
+  useFocusTrap(formRef, open);
 
   useEffect(() => {
     if (!open) return;
@@ -48,8 +51,11 @@ export function SaveDialog({ open, initialName, isUpdate, onSave, onClose }: Sav
         className="absolute inset-0 animate-fade-in cursor-default bg-black/40 backdrop-blur-sm"
       />
       <form
+        ref={formRef}
         onSubmit={submit}
         className="relative z-10 w-full max-w-sm animate-pop-in rounded-2xl border border-border bg-surface p-5 shadow-warm"
+        role="dialog"
+        aria-modal="true"
         aria-labelledby={`${id}-title`}
       >
         <h2 id={`${id}-title`} className="text-base font-semibold">

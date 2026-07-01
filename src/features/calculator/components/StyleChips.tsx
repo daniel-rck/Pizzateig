@@ -11,7 +11,8 @@ type StyleChipsProps = {
 /** Style chips; a tap applies the style's defaults. Wraps fully — never clipped. */
 export function StyleChips({ value, onChange }: StyleChipsProps) {
   return (
-    <fieldset className="flex flex-wrap gap-2" aria-label="Teigstil">
+    <fieldset className="flex flex-wrap gap-2">
+      <legend className="sr-only">Teigstil</legend>
       {DOUGH_STYLE_ORDER.map((style) => {
         const active = style === value;
         return (
