@@ -1,5 +1,6 @@
 import { ChevronDown, SlidersHorizontal } from "lucide-react";
 import { useState } from "react";
+import { convertYeastBetween, MAX_FRESH_YEAST_PCT } from "../../../lib/dough.ts";
 import { formatPercent } from "../../../lib/format.ts";
 import { tick } from "../../../lib/haptics.ts";
 import { Chip } from "../../../lib/ui/index.ts";
@@ -91,7 +92,19 @@ export function Feintuning({ draft, resolvedYeastPct, onUpdate, onYeast }: Feint
                       active={active}
                       onClick={() => {
                         tick();
-                        onYeast({ type });
+                        // In manual mode convert the override so the physical
+                        // dose stays equivalent instead of silently relabeling.
+                        onYeast(
+                          manual
+                            ? {
+                                type,
+                                pct: Math.min(
+                                  MAX_FRESH_YEAST_PCT,
+                                  convertYeastBetween(draft.yeast.pct, draft.yeast.type, type),
+                                ),
+                              }
+                            : { type },
+                        );
                       }}
                     >
                       {YEAST_LABELS[type]}

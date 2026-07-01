@@ -1,7 +1,7 @@
 import { createContext, type ReactNode, useCallback, useContext, useMemo, useState } from "react";
 import { parseShareHash } from "../lib/share.ts";
-import type { Recipe } from "../types/recipe.ts";
-import { type RecipeDraft, recipeToDraft, useRecipeDraft } from "./recipeDraft.ts";
+import type { DoughStyle, Recipe } from "../types/recipe.ts";
+import { createDraft, type RecipeDraft, recipeToDraft, useRecipeDraft } from "./recipeDraft.ts";
 
 type DraftContextValue = ReturnType<typeof useRecipeDraft> & {
   /** True when the current draft came from a shared `#r=` link. */
@@ -12,8 +12,8 @@ type DraftContextValue = ReturnType<typeof useRecipeDraft> & {
   currentRecipeId: string | null;
   /** Load a stored recipe into the draft and switch to edit-in-place mode. */
   loadRecipe: (recipe: Recipe) => void;
-  /** Forget any tracked recipe id (e.g. after starting fresh). */
-  clearCurrentRecipe: () => void;
+  /** Start a fresh draft, detached from any stored recipe or share import. */
+  startNewRecipe: (style?: DoughStyle) => void;
 };
 
 const DraftContext = createContext<DraftContextValue | null>(null);
@@ -21,6 +21,13 @@ const DraftContext = createContext<DraftContextValue | null>(null);
 function readHashDraft(): RecipeDraft | null {
   if (typeof window === "undefined") return null;
   return parseShareHash(window.location.hash);
+}
+
+/** Drop a `#r=` share hash so a reload can't re-import a stale draft. */
+function clearShareHash(): void {
+  if (typeof window !== "undefined" && window.location.hash) {
+    history.replaceState(null, "", window.location.pathname + window.location.search);
+  }
 }
 
 export function DraftProvider({ children }: { children: ReactNode }) {
@@ -31,9 +38,7 @@ export function DraftProvider({ children }: { children: ReactNode }) {
 
   const dismissImport = useCallback(() => {
     setImported(false);
-    if (typeof window !== "undefined" && window.location.hash) {
-      history.replaceState(null, "", window.location.pathname + window.location.search);
-    }
+    clearShareHash();
   }, []);
 
   const loadRecipe = useCallback(
@@ -41,11 +46,20 @@ export function DraftProvider({ children }: { children: ReactNode }) {
       draftApi.reset(recipeToDraft(recipe));
       setCurrentRecipeId(recipe.id);
       setImported(false);
+      clearShareHash();
     },
     [draftApi.reset],
   );
 
-  const clearCurrentRecipe = useCallback(() => setCurrentRecipeId(null), []);
+  const startNewRecipe = useCallback(
+    (style?: DoughStyle) => {
+      draftApi.reset(createDraft(style));
+      setCurrentRecipeId(null);
+      setImported(false);
+      clearShareHash();
+    },
+    [draftApi.reset],
+  );
 
   const value = useMemo<DraftContextValue>(
     () => ({
@@ -54,9 +68,9 @@ export function DraftProvider({ children }: { children: ReactNode }) {
       dismissImport,
       currentRecipeId,
       loadRecipe,
-      clearCurrentRecipe,
+      startNewRecipe,
     }),
-    [draftApi, imported, dismissImport, currentRecipeId, loadRecipe, clearCurrentRecipe],
+    [draftApi, imported, dismissImport, currentRecipeId, loadRecipe, startNewRecipe],
   );
 
   return <DraftContext.Provider value={value}>{children}</DraftContext.Provider>;

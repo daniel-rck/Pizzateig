@@ -25,13 +25,19 @@ export function useLiveQuery<T>(
 
   useEffect(() => {
     let cancelled = false;
+    // Latest-wins: overlapping runs may resolve out of order; only the most
+    // recently started run is allowed to commit its result.
+    let runToken = 0;
 
     const run = async () => {
+      const token = ++runToken;
       try {
         const data = await queryRef.current();
-        if (!cancelled) setState({ data, loading: false, error: undefined });
+        if (!cancelled && token === runToken) {
+          setState({ data, loading: false, error: undefined });
+        }
       } catch (err) {
-        if (!cancelled) {
+        if (!cancelled && token === runToken) {
           setState({ data: undefined, loading: false, error: err as Error });
         }
       }

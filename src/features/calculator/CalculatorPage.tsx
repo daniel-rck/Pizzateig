@@ -27,6 +27,7 @@ export function CalculatorPage() {
     dismissImport,
     currentRecipeId,
     loadRecipe,
+    startNewRecipe,
   } = useDraft();
 
   const [saveOpen, setSaveOpen] = useState(false);
@@ -118,6 +119,11 @@ export function CalculatorPage() {
               <Share2 size={16} aria-hidden="true" />
               Teilen
             </Button>
+            {currentRecipeId ? (
+              <Button variant="ghost" onClick={() => startNewRecipe(draft.style)}>
+                Neu
+              </Button>
+            ) : null}
           </>
         }
       />

@@ -3,9 +3,11 @@ import type { FermentConfig } from "../types/recipe.ts";
 import {
   computeAmounts,
   convertYeast,
+  convertYeastBetween,
   DRY_FACTOR,
   effectiveHours,
   fermentRate,
+  MAX_FRESH_YEAST_PCT,
   Q10,
   resolveYeastPct,
   suggestFreshYeastPct,
@@ -87,6 +89,15 @@ describe("suggestFreshYeastPct", () => {
     expect(suggestFreshYeastPct(ferment({ totalHours: 0, coldHours: 0 }), 0.016)).toBe(0);
   });
 
+  it("caps the suggestion for very short cold plans at MAX_FRESH_YEAST_PCT", () => {
+    // 2 h all-cold at 4 °C → tiny effective hours; uncapped this would be ~13 %.
+    const pct = suggestFreshYeastPct(
+      ferment({ totalHours: 2, coldHours: 2, coldTempC: 4 }),
+      STYLES.napoletana.k,
+    );
+    expect(pct).toBe(MAX_FRESH_YEAST_PCT);
+  });
+
   it("needs much more yeast for a cold overnight plan than a warm room plan", () => {
     const k = STYLES.napoletana.k;
     const warm8h = suggestFreshYeastPct(ferment({ totalHours: 8, roomTempC: 24 }), k);
@@ -106,6 +117,19 @@ describe("convertYeast", () => {
 
   it("scales dry yeast by the 0.33 factor", () => {
     expect(convertYeast(0.012, "dry")).toBeCloseTo(0.012 * DRY_FACTOR, 10);
+  });
+});
+
+describe("convertYeastBetween", () => {
+  it("converts fresh to dry and back without drift", () => {
+    const dry = convertYeastBetween(0.01, "fresh", "dry");
+    expect(dry).toBeCloseTo(0.01 * DRY_FACTOR, 10);
+    expect(convertYeastBetween(dry, "dry", "fresh")).toBeCloseTo(0.01, 10);
+  });
+
+  it("is the identity for a same-type conversion", () => {
+    expect(convertYeastBetween(0.007, "fresh", "fresh")).toBeCloseTo(0.007, 10);
+    expect(convertYeastBetween(0.003, "dry", "dry")).toBeCloseTo(0.003, 10);
   });
 });
 
@@ -208,6 +232,19 @@ describe("computeAmounts", () => {
     });
     expect(a.waterG).toBe(a.flourG);
     expect(a.flourG).toBe(250);
+  });
+
+  it("stays finite when the percentage sum is driven non-positive", () => {
+    const a = computeAmounts({
+      ballCount: 4,
+      ballWeightG: 250,
+      hydration: -2,
+      saltPct: 0,
+      oilPct: 0,
+      yeastPct: 0,
+    });
+    expect(a.flourG).toBe(0);
+    for (const v of Object.values(a)) expect(Number.isFinite(v)).toBe(true);
   });
 
   it("matches hand-computed baker's percent for a Napoletana batch", () => {

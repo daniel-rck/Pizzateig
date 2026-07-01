@@ -42,4 +42,27 @@ describe("CalculatorPage", () => {
     // 5 × 260 = 1.300 g
     expect(screen.getByText(/1\.300 g Teig/)).toBeInTheDocument();
   });
+
+  it("saves a recipe, then detaches again via the Neu action", async () => {
+    const user = userEvent.setup();
+    renderPage();
+
+    // The action buttons live in the expanded result sheet.
+    await user.click(screen.getByRole("button", { name: "Ergebnis aufziehen" }));
+    await user.click(screen.getByRole("button", { name: "Speichern" }));
+    await user.type(screen.getByLabelText("Name"), "Testpizza");
+    const submit = screen
+      .getAllByRole("button", { name: "Speichern" })
+      .find((b) => b.getAttribute("type") === "submit");
+    expect(submit).toBeDefined();
+    await user.click(submit as HTMLElement);
+
+    // Saved: the primary action now updates in place and Neu appears.
+    expect(await screen.findByRole("button", { name: "Aktualisieren" })).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Neu" }));
+
+    // Detached: back to a fresh draft that saves as a new recipe.
+    expect(screen.getByRole("button", { name: "Speichern" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Neu" })).not.toBeInTheDocument();
+  });
 });

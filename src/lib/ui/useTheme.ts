@@ -21,8 +21,12 @@ export const themeInitScript =
 
 function readStoredTheme(): Theme {
   if (typeof window === "undefined") return "system";
-  const stored = localStorage.getItem(STORAGE_KEY);
-  if (stored === "light" || stored === "dark" || stored === "system") return stored;
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored === "light" || stored === "dark" || stored === "system") return stored;
+  } catch {
+    // Storage can throw (private mode, disabled storage) — fall back.
+  }
   return "system";
 }
 
@@ -47,7 +51,11 @@ export function useTheme(): UseThemeResult {
   const setTheme = useCallback((next: Theme) => {
     setThemeState(next);
     if (typeof window === "undefined") return;
-    localStorage.setItem(STORAGE_KEY, next);
+    try {
+      localStorage.setItem(STORAGE_KEY, next);
+    } catch {
+      // Persistence is best-effort; the in-memory theme still applies.
+    }
     applyTheme(next);
   }, []);
 
