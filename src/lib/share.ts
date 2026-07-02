@@ -73,6 +73,28 @@ function isFiniteNumber(x: unknown): x is number {
   return typeof x === "number" && Number.isFinite(x);
 }
 
+const clamp = (v: number, min: number, max: number): number => Math.min(max, Math.max(min, v));
+
+/**
+ * Decode-time value ranges, mirroring the UI controls (Stepper/Slider min/max).
+ * Shared payloads are untrusted input: without clamping, negative fractions can
+ * drive `sumPct` in `computeAmounts` to ≤ 0 and render infinite/negative grams.
+ */
+const LIMITS = {
+  ballCount: { min: 1, max: 24 },
+  ballWeightG: { min: 100, max: 1000 },
+  hydration: { min: 0.5, max: 1.0 },
+  saltPct: { min: 0, max: 0.04 },
+  oilPct: { min: 0, max: 0.05 },
+  yeastPct: { min: 0, max: 0.03 },
+  totalHours: { min: 0, max: 120 },
+  roomTempC: { min: 16, max: 30 },
+  coldHours: { min: 0, max: 96 },
+  coldTempC: { min: 1, max: 8 },
+} as const;
+
+const MAX_NAME_LENGTH = 200;
+
 function isShareV1(x: unknown): x is ShareV1 {
   if (typeof x !== "object" || x === null) return false;
   const o = x as Record<string, unknown>;
@@ -104,20 +126,29 @@ export function decodeDraft(encoded: string): RecipeDraft | null {
     const json = new TextDecoder().decode(fromBase64Url(encoded));
     const parsed: unknown = JSON.parse(json);
     if (!isShareV1(parsed)) return null;
+    const totalHours = clamp(parsed.th, LIMITS.totalHours.min, LIMITS.totalHours.max);
     return {
-      name: parsed.n,
+      name: parsed.n.slice(0, MAX_NAME_LENGTH),
       style: parsed.s,
-      ballCount: parsed.bc,
-      ballWeightG: parsed.bw,
-      hydration: parsed.h,
-      saltPct: parsed.sa,
-      oilPct: parsed.o,
-      yeast: { type: parsed.yt, mode: parsed.ym, pct: parsed.yp },
+      ballCount: Math.round(clamp(parsed.bc, LIMITS.ballCount.min, LIMITS.ballCount.max)),
+      ballWeightG: clamp(parsed.bw, LIMITS.ballWeightG.min, LIMITS.ballWeightG.max),
+      hydration: clamp(parsed.h, LIMITS.hydration.min, LIMITS.hydration.max),
+      saltPct: clamp(parsed.sa, LIMITS.saltPct.min, LIMITS.saltPct.max),
+      oilPct: clamp(parsed.o, LIMITS.oilPct.min, LIMITS.oilPct.max),
+      yeast: {
+        type: parsed.yt,
+        mode: parsed.ym,
+        pct: clamp(parsed.yp, LIMITS.yeastPct.min, LIMITS.yeastPct.max),
+      },
       ferment: {
-        totalHours: parsed.th,
-        roomTempC: parsed.rt,
-        coldHours: parsed.ch,
-        coldTempC: parsed.ct,
+        totalHours,
+        roomTempC: clamp(parsed.rt, LIMITS.roomTempC.min, LIMITS.roomTempC.max),
+        // Also cap at totalHours so the derived room share stays ≥ 0.
+        coldHours: Math.min(
+          totalHours,
+          clamp(parsed.ch, LIMITS.coldHours.min, LIMITS.coldHours.max),
+        ),
+        coldTempC: clamp(parsed.ct, LIMITS.coldTempC.min, LIMITS.coldTempC.max),
       },
     };
   } catch {

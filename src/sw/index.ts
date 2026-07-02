@@ -24,10 +24,3 @@ self.addEventListener("install", () => {
 self.addEventListener("activate", (event) => {
   event.waitUntil(self.clients.claim());
 });
-
-// Optional: cross-tab + client → SW messages.
-self.addEventListener("message", (event) => {
-  if (event.data?.type === "SKIP_WAITING") {
-    self.skipWaiting();
-  }
-});

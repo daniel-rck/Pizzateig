@@ -1,4 +1,4 @@
-# pizzateig
+# Pizzateig
 
 Pizzateig-Rechner als installierbare PWA. Aus gewünschten Teig-Eigenschaften
 (Stil, Anzahl, Ballgewicht, Gärplan) berechnet die App die exakten
@@ -13,7 +13,7 @@ im Browser (IndexedDB). Voll offline-fähig.
 
 - **Live-Berechnung** ohne „Berechnen"-Button: jede Eingabe aktualisiert das
   Ergebnis sofort.
-- **Stil-Presets** (Napoletana, Teglia, NY, Pan, Custom) mit sinnvollen Defaults
+- **Stil-Presets** (Napoletana, Teglia, NY, Pan, Eigener Stil) mit sinnvollen Defaults
   für Hydration, Salz, Öl und Ballgewicht.
 - **Physikalisch begründeter Hefe-Vorschlag** über ein Q10-Kinetik-Modell
   (Triebrate verdoppelt sich je ~10 °C), inkl. Kühlgare.

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createDraft, type RecipeDraft } from "../state/recipeDraft.ts";
+import { computeDraft, createDraft, type RecipeDraft } from "../state/recipeDraft.ts";
 import { buildShareUrl, decodeDraft, encodeDraft, parseShareHash } from "./share.ts";
 
 const sample = (): RecipeDraft => ({
@@ -32,14 +32,53 @@ describe("share codec", () => {
   });
 
   it("rejects an unknown style", () => {
-    const encoded = encodeDraft({ ...sample(), style: "napoletana" });
-    const tampered = btoa(
-      JSON.stringify({
-        ...JSON.parse(atob(encoded.replace(/-/g, "+").replace(/_/g, "/"))),
-        s: "x",
-      }),
-    );
-    expect(decodeDraft(tampered)).toBeNull();
+    expect(decodeDraft(tamper({ s: "x" }))).toBeNull();
+  });
+});
+
+/** Re-encode the sample payload with tampered fields (hostile-input simulation). */
+function tamper(patch: Record<string, unknown>): string {
+  const encoded = encodeDraft(sample());
+  const payload = JSON.parse(atob(encoded.replace(/-/g, "+").replace(/_/g, "/"))) as Record<
+    string,
+    unknown
+  >;
+  return btoa(JSON.stringify({ ...payload, ...patch }));
+}
+
+describe("share decode clamping", () => {
+  it("clamps hostile numeric values to the UI ranges", () => {
+    const decoded = decodeDraft(tamper({ h: -5, bc: 9999, sa: 3, o: -1, yp: 2 }));
+    expect(decoded).not.toBeNull();
+    expect(decoded?.hydration).toBe(0.5);
+    expect(decoded?.ballCount).toBe(24);
+    expect(decoded?.saltPct).toBe(0.04);
+    expect(decoded?.oilPct).toBe(0);
+    expect(decoded?.yeast.pct).toBe(0.03);
+  });
+
+  it("computes finite, positive amounts from a hostile payload", () => {
+    const decoded = decodeDraft(tamper({ h: -5, sa: -3, o: -1, yp: -2, bw: -100 }));
+    expect(decoded).not.toBeNull();
+    const { amounts } = computeDraft(decoded as RecipeDraft);
+    expect(Number.isFinite(amounts.flourG)).toBe(true);
+    expect(amounts.flourG).toBeGreaterThan(0);
+    expect(amounts.waterG).toBeGreaterThanOrEqual(0);
+  });
+
+  it("caps cold hours at the total hours", () => {
+    const decoded = decodeDraft(tamper({ th: 10, ch: 50 }));
+    expect(decoded?.ferment.totalHours).toBe(10);
+    expect(decoded?.ferment.coldHours).toBe(10);
+  });
+
+  it("rounds the ball count to an integer", () => {
+    expect(decodeDraft(tamper({ bc: 3.7 }))?.ballCount).toBe(4);
+  });
+
+  it("truncates an oversized name", () => {
+    const decoded = decodeDraft(tamper({ n: "x".repeat(500) }));
+    expect(decoded?.name).toHaveLength(200);
   });
 });
 

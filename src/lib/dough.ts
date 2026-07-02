@@ -47,13 +47,21 @@ export function effectiveHours(ferment: FermentConfig): number {
 }
 
 /**
+ * Upper bound for the suggested fresh-yeast fraction (matches the manual
+ * override slider's ceiling). Very short, mostly-cold plans would otherwise
+ * suggest physically absurd doses (`k / eff` grows without bound as eff → 0).
+ */
+export const MAX_FRESH_YEAST_PCT = 0.03;
+
+/**
  * Suggested fresh-yeast fraction for the given ferment plan and style constant.
- * `freshYeastPct = k / effHours`. Degenerate plans (no effective hours) yield 0.
+ * `freshYeastPct = k / effHours`, capped at `MAX_FRESH_YEAST_PCT`. Degenerate
+ * plans (no effective hours) yield 0.
  */
 export function suggestFreshYeastPct(ferment: FermentConfig, k: number): number {
   const eff = effectiveHours(ferment);
   if (!(eff > 0)) return 0;
-  return k / eff;
+  return Math.min(MAX_FRESH_YEAST_PCT, k / eff);
 }
 
 /**
@@ -70,6 +78,15 @@ export function convertYeast(freshPct: number, type: YeastType): number {
       // Sourdough uses an Anstellgut-% model (v1.1), not the K/Q10 path.
       return freshPct;
   }
+}
+
+/**
+ * Convert a yeast fraction between types so the physical leavening effect
+ * stays equivalent (normalize to fresh terms, then convert to the target).
+ */
+export function convertYeastBetween(pct: number, from: YeastType, to: YeastType): number {
+  const fresh = from === "dry" ? pct / DRY_FACTOR : pct;
+  return convertYeast(fresh, to);
 }
 
 /**
@@ -116,7 +133,8 @@ export function computeAmounts(input: AmountsInput): Amounts {
   const { ballCount, ballWeightG, hydration, saltPct, oilPct, yeastPct } = input;
   const totalDough = ballCount * ballWeightG;
   const sumPct = 1 + hydration + saltPct + oilPct + yeastPct;
-  const flour = totalDough / sumPct;
+  // Defensive: callers clamp their inputs, but keep the pure function total.
+  const flour = sumPct > 0 ? totalDough / sumPct : 0;
 
   return {
     totalDoughG: roundG(totalDough),

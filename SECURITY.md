@@ -15,16 +15,15 @@ Do **not** open public issues for security reports.
 
 This app is local-first and DSGVO-konform by construction:
 
-- App data lives in the user's browser (IndexedDB). No required account.
-- Any optional sync uses client-side AES-GCM encryption; the server only
-  sees ciphertext.
+- App data lives in the user's browser (IndexedDB). No account, no sync.
+- The Cloudflare Worker only serves the static bundle (plus a `/healthz`
+  endpoint) and sets the security headers; it accepts no user input.
 - No third-party telemetry or analytics SDKs.
 
 In-scope vulnerabilities include:
 
-- Cryptographic weaknesses in the sync layer (if used)
-- XSS or injection vectors in the UI
-- Cloudflare Worker endpoints accepting malformed input
+- XSS or injection vectors in the UI (e.g. via shared `#r=` payloads)
+- Content-Security-Policy bypasses in the worker-served headers
 - Service worker cache-poisoning vectors
 
 Out of scope:

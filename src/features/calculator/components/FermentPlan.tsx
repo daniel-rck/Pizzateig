@@ -1,6 +1,6 @@
 import { CalendarDays, Clock, Snowflake } from "lucide-react";
 import type { ReactNode } from "react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   FERMENT_PRESET_ORDER,
   FERMENT_PRESETS,
@@ -39,6 +39,14 @@ function previewYeastG(draft: RecipeDraft, config: FermentConfig): number {
 export function FermentPlan({ draft, onSelectPreset, onCustomChange }: FermentPlanProps) {
   const activePreset = matchFermentPreset(draft.ferment);
   const [customOpen, setCustomOpen] = useState(activePreset === null);
+
+  const previewYeast = useMemo(
+    () =>
+      Object.fromEntries(
+        FERMENT_PRESET_ORDER.map((id) => [id, previewYeastG(draft, FERMENT_PRESETS[id].config)]),
+      ) as Record<FermentPresetId, number>,
+    [draft],
+  );
 
   const { ferment } = draft;
   const roomHours = Math.max(0, ferment.totalHours - ferment.coldHours);
@@ -84,7 +92,7 @@ export function FermentPlan({ draft, onSelectPreset, onCustomChange }: FermentPl
               <span className="text-sm font-semibold">{preset.label}</span>
               <span className="mt-0.5 text-xs text-fg-muted">{preset.hint}</span>
               <span className="mt-2 text-xs font-medium text-accent-700 dark:text-accent-300">
-                {formatYeastGrams(previewYeastG(draft, preset.config))} Hefe
+                {formatYeastGrams(previewYeast[id])} Hefe
               </span>
             </button>
           );
