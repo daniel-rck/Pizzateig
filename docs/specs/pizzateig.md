@@ -134,7 +134,7 @@ Disclosure.
 ### 4.1 Eingabe-Ebenen
 
 **Ebene 1 — 80%-Pfad (above the fold, untere Daumenzone bevorzugt):**
-- **Stil-Chips** (horizontal scroll): Napoletana / Teglia / NY / Pan / Custom.
+- **Stil-Chips** (umbrechend, nie abgeschnitten): Napoletana / Teglia / NY / Pan / Eigener Stil.
   Ein Tap setzt alle Defaults (Hydration, Salz, Öl, Ballgewicht, `K`).
 - **Anzahl Teiglinge:** Stepper `− N +`, große Tap-Targets, keine Tastatur.
 - **Ballgewicht:** Preset-Chips je Stil (z. B. 250/280/320 g) + feiner Stepper.
