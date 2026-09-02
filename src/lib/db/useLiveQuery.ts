@@ -25,8 +25,11 @@ export function useLiveQuery<T>(
 
   useEffect(() => {
     let cancelled = false;
-    // Latest-wins: overlapping runs may resolve out of order; only the most
-    // recently started run is allowed to commit its result.
+    // Latest-wins. A mutation can fire `run` again while an earlier run is
+    // still awaiting, and IndexedDB gives no ordering guarantee between them —
+    // so without this token the slower, older query can resolve last and
+    // overwrite fresh data with stale data. Only the most recently started run
+    // is allowed to commit.
     let runToken = 0;
 
     const run = async () => {
