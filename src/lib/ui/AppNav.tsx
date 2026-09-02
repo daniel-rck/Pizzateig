@@ -49,6 +49,9 @@ export function AppNav({ items, variant }: AppNavProps) {
         >
           {({ isActive }) => (
             <>
+              {/* The active state is a pill behind the icon rather than a color
+                  change on both icon and label: at this size a tint alone is
+                  easy to miss, and the pill keeps the touch target legible. */}
               <span
                 aria-hidden="true"
                 className={[
@@ -61,7 +64,12 @@ export function AppNav({ items, variant }: AppNavProps) {
               >
                 {item.icon}
               </span>
-              <span className={isActive ? "text-accent-600 dark:text-accent-300" : "text-fg-muted"}>
+              <span
+                className={[
+                  "max-w-full truncate",
+                  isActive ? "text-accent-600 dark:text-accent-300" : "text-fg-muted",
+                ].join(" ")}
+              >
                 {item.label}
               </span>
             </>

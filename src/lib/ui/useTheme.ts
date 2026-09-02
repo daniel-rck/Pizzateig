@@ -4,11 +4,22 @@ export type Theme = "light" | "dark" | "system";
 
 export type UseThemeResult = {
   theme: Theme;
+  resolvedTheme: "light" | "dark";
   setTheme: (t: Theme) => void;
 };
 
-// The inline pre-paint script in index.html reads the same key — keep in sync.
 const STORAGE_KEY = "theme";
+
+/**
+ * The anti-flash snippet, as a string. Prefer the shipped `public/theme-init.js`
+ * and a `<script src="/theme-init.js">` tag: an external file lets a Worker CSP
+ * stay `script-src 'self'` instead of pinning a `sha256-` hash that breaks
+ * silently whenever the snippet changes. This export exists for apps that must
+ * inline it anyway. Keep the two in sync.
+ */
+export const themeInitScript =
+  `(function(){try{var t=localStorage.getItem("${STORAGE_KEY}");` +
+  `if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}})();`;
 
 function readStoredTheme(): Theme {
   if (typeof window === "undefined") return "system";
@@ -16,9 +27,15 @@ function readStoredTheme(): Theme {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored === "light" || stored === "dark" || stored === "system") return stored;
   } catch {
-    // Storage can throw (private mode, disabled storage) — fall back.
+    // localStorage can throw outright, not just return null: Safari private
+    // mode and "block all cookies" both do. Fall back to following the OS.
   }
   return "system";
+}
+
+function systemPrefersDark(): boolean {
+  if (typeof window === "undefined") return false;
+  return window.matchMedia?.("(prefers-color-scheme: dark)").matches ?? false;
 }
 
 function applyTheme(theme: Theme): void {
@@ -32,6 +49,7 @@ function applyTheme(theme: Theme): void {
 
 export function useTheme(): UseThemeResult {
   const [theme, setThemeState] = useState<Theme>(() => readStoredTheme());
+  const [systemDark, setSystemDark] = useState<boolean>(() => systemPrefersDark());
 
   const setTheme = useCallback((next: Theme) => {
     setThemeState(next);
@@ -39,7 +57,7 @@ export function useTheme(): UseThemeResult {
     try {
       localStorage.setItem(STORAGE_KEY, next);
     } catch {
-      // Persistence is best-effort; the in-memory theme still applies.
+      // Persistence is best-effort; the choice still applies for this session.
     }
     applyTheme(next);
   }, []);
@@ -49,5 +67,16 @@ export function useTheme(): UseThemeResult {
     applyTheme(theme);
   }, [theme]);
 
-  return { theme, setTheme };
+  // Keep resolvedTheme live when following the system in "system" mode.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const mql = window.matchMedia("(prefers-color-scheme: dark)");
+    const onChange = (event: MediaQueryListEvent) => setSystemDark(event.matches);
+    mql.addEventListener("change", onChange);
+    return () => mql.removeEventListener("change", onChange);
+  }, []);
+
+  const resolvedTheme = theme === "system" ? (systemDark ? "dark" : "light") : theme;
+
+  return { theme, resolvedTheme, setTheme };
 }
