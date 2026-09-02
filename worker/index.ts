@@ -4,14 +4,14 @@ export interface Env {
 
 /**
  * Content-Security-Policy for the HTML shell. The app is fully self-contained
- * (no CDNs, no external requests). The script hash allows the inline pre-paint
- * theme script in index.html — recompute it if that script changes byte-for-byte
- * (sha256 over the text between the <script> tags in the built dist/index.html).
+ * (no CDNs, no external requests), and the pre-paint theme script lives in
+ * /theme-init.js rather than inline — so `script-src` needs no hash allowance
+ * and never falls out of sync with the snippet.
  * 'unsafe-inline' for styles covers React inline style attributes.
  */
 const CSP = [
   "default-src 'self'",
-  "script-src 'self' 'sha256-iLd/WO4BPahxF0rVf4ULFuAsaYaB8KmxCw/EUb65BTc='",
+  "script-src 'self'",
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data:",
   "connect-src 'self'",
