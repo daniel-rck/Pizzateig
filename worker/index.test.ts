@@ -42,7 +42,10 @@ describe("worker security headers", () => {
     const csp = res.headers.get("Content-Security-Policy");
     expect(csp).toContain("default-src 'self'");
     expect(csp).toContain("frame-ancestors 'none'");
-    expect(csp).toMatch(/script-src 'self' 'sha256-[A-Za-z0-9+/]+='/);
+    // The pre-paint theme script is /theme-init.js, not inline, so script-src
+    // needs no hash allowance — and cannot silently break when it changes.
+    expect(csp).toContain("script-src 'self'");
+    expect(csp).not.toContain("sha256-");
     expect(await res.text()).toBe("body");
   });
 

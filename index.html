@@ -14,18 +14,9 @@
       content="Pizzateig-Rechner: exakte Zutatenmengen nach Bäcker-Prozent mit Hefe-Vorschlag nach Gehzeit und Temperatur."
     />
     <title>Pizzateig — Pizzateig-Rechner</title>
-    <!-- Pre-paint theme init; reads the same "theme" key as useTheme.ts (keep in sync). -->
-    <script>
-      (() => {
-        try {
-          const t = localStorage.getItem("theme");
-          if (t === "light" || t === "dark")
-            document.documentElement.setAttribute("data-theme", t);
-        } catch (_e) {
-          /* ignore */
-        }
-      })();
-    </script>
+    <!-- Pre-paint theme init. External file so the worker CSP can stay
+         `script-src 'self'` with no inline hash to keep in sync. -->
+    <script src="/theme-init.js"></script>
   </head>
   <body>
     <div id="root"></div>

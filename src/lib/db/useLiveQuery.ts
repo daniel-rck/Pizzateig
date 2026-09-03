@@ -25,8 +25,11 @@ export function useLiveQuery<T>(
 
   useEffect(() => {
     let cancelled = false;
-    // Latest-wins: overlapping runs may resolve out of order; only the most
-    // recently started run is allowed to commit its result.
+    // Latest-wins. A mutation can fire `run` again while an earlier run is
+    // still awaiting, and IndexedDB gives no ordering guarantee between them —
+    // so without this token the slower, older query can resolve last and
+    // overwrite fresh data with stale data. Only the most recently started run
+    // is allowed to commit.
     let runToken = 0;
 
     const run = async () => {
@@ -51,7 +54,10 @@ export function useLiveQuery<T>(
       };
     }
 
-    const channels = [new BroadcastChannel(`db:${storeName}`), new BroadcastChannel("db:*")];
+    // Deduped: a caller that passes "*" as the store name would otherwise open
+    // two channels on the same name and run every query twice per mutation.
+    const names = Array.from(new Set([`db:${storeName}`, "db:*"]));
+    const channels = names.map((name) => new BroadcastChannel(name));
     for (const channel of channels) {
       channel.onmessage = () => {
         run();

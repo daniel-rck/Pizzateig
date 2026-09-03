@@ -52,14 +52,21 @@
   /* ≥ 4.5:1 on the light surfaces — subtle text is still body-size (WCAG AA). */
   --color-fg-subtle: oklch(0.51 0.01 65);
 
+  /* Foreground for text sitting on a saturated fill (accent/danger/success
+   * buttons and badges). `--color-fg` is near-black in light mode, so it is the
+   * wrong token there — this one stays light in both themes. */
+  --color-fg-on-accent: oklch(0.99 0 0);
+
   /* ── Semantic ──────────────────────────────────────────── */
   --color-success: oklch(0.65 0.17 150);
   --color-warning: oklch(0.75 0.15 80);
   --color-danger: oklch(0.6 0.2 25);
+  --color-info: oklch(0.65 0.15 230);
 
   /* ── Typography ────────────────────────────────────────── */
   --font-sans:
     ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
 
   /* ── Radii ─────────────────────────────────────────────── */
   --radius-sm: 0.25rem;
