@@ -7,6 +7,7 @@ import { ROUTES } from "../../lib/routes.ts";
 import { STYLES } from "../../lib/styles.ts";
 import { Badge, Button, Card, EmptyState, PageHeader, Spinner } from "../../lib/ui/index.ts";
 import { useDraft } from "../../state/DraftContext.tsx";
+import { useToast } from "../../state/ToastContext.tsx";
 import type { Recipe } from "../../types/recipe.ts";
 import { ConfirmDialog } from "./components/ConfirmDialog.tsx";
 
@@ -14,11 +15,13 @@ export function RecipesPage() {
   const { data: recipes, loading } = useRecipes();
   const { loadRecipe } = useDraft();
   const navigate = useNavigate();
+  const { showToast } = useToast();
   const [pendingDelete, setPendingDelete] = useState<Recipe | null>(null);
 
   const open = (recipe: Recipe) => {
     loadRecipe(recipe);
     navigate(ROUTES.home);
+    showToast(`„${recipe.name}" geladen`);
   };
 
   return (
@@ -59,6 +62,7 @@ export function RecipesPage() {
                 <Button
                   variant="ghost"
                   size="sm"
+                  className="h-11 w-11 shrink-0 px-0 text-fg-muted hover:text-danger"
                   aria-label={`${recipe.name} löschen`}
                   onClick={() => setPendingDelete(recipe)}
                 >
@@ -75,7 +79,13 @@ export function RecipesPage() {
         title="Rezept löschen"
         message={pendingDelete ? `„${pendingDelete.name}" wird dauerhaft gelöscht.` : ""}
         onConfirm={async () => {
-          if (pendingDelete) await removeRecipe(pendingDelete.id);
+          if (!pendingDelete) return;
+          try {
+            await removeRecipe(pendingDelete.id);
+            showToast("Gelöscht");
+          } catch {
+            showToast("Löschen fehlgeschlagen");
+          }
           setPendingDelete(null);
         }}
         onClose={() => setPendingDelete(null)}

@@ -3,6 +3,7 @@ import { Outlet } from "react-router-dom";
 import { ROUTES } from "./lib/routes.ts";
 import { AppShell, type NavItem } from "./lib/ui/index.ts";
 import { DraftProvider } from "./state/DraftContext.tsx";
+import { ToastProvider } from "./state/ToastContext.tsx";
 
 const NAV_ITEMS: NavItem[] = [
   { to: ROUTES.home, label: "Rechner", icon: <Calculator size={20} /> },
@@ -12,14 +13,16 @@ const NAV_ITEMS: NavItem[] = [
 /** Root layout: the shared shell with bottom-nav (mobile) / sidebar (desktop). */
 export function App() {
   return (
-    <DraftProvider>
-      <AppShell
-        title="Pizzateig"
-        logo={<Pizza size={22} aria-hidden="true" />}
-        navItems={NAV_ITEMS}
-      >
-        <Outlet />
-      </AppShell>
-    </DraftProvider>
+    <ToastProvider>
+      <DraftProvider>
+        <AppShell
+          title="Pizzateig"
+          logo={<Pizza size={22} aria-hidden="true" />}
+          navItems={NAV_ITEMS}
+        >
+          <Outlet />
+        </AppShell>
+      </DraftProvider>
+    </ToastProvider>
   );
 }
