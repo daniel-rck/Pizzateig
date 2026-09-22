@@ -17,6 +17,17 @@ export function SaveDialog({ open, initialName, isUpdate, onSave, onClose }: Sav
   const formRef = useRef<HTMLFormElement>(null);
   const [name, setName] = useState(initialName);
   const [busy, setBusy] = useState(false);
+  // Mirrors `busy` for the Escape listener without re-running the open effect.
+  const busyRef = useRef(false);
+  const setBusyBoth = (value: boolean) => {
+    busyRef.current = value;
+    setBusy(value);
+  };
+  // No dismissal while an async save/delete runs, so a stale completion can't
+  // close a dialog that was reopened in the meantime.
+  const dismiss = () => {
+    if (!busyRef.current) onClose();
+  };
 
   useFocusTrap(formRef, open);
 
@@ -25,7 +36,7 @@ export function SaveDialog({ open, initialName, isUpdate, onSave, onClose }: Sav
     setName(initialName);
     const t = setTimeout(() => inputRef.current?.focus(), 0);
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape" && !busyRef.current) onClose();
     };
     window.addEventListener("keydown", onKey);
     return () => {
@@ -39,13 +50,13 @@ export function SaveDialog({ open, initialName, isUpdate, onSave, onClose }: Sav
   const submit = async (e: FormEvent) => {
     e.preventDefault();
     const trimmed = name.trim();
-    if (!trimmed || busy) return;
+    if (!trimmed || busyRef.current) return;
     // Guard against double submits while IndexedDB is writing.
-    setBusy(true);
+    setBusyBoth(true);
     try {
       await onSave(trimmed);
     } finally {
-      setBusy(false);
+      setBusyBoth(false);
     }
   };
 
@@ -54,7 +65,7 @@ export function SaveDialog({ open, initialName, isUpdate, onSave, onClose }: Sav
       <button
         type="button"
         aria-label="Schließen"
-        onClick={onClose}
+        onClick={dismiss}
         className="absolute inset-0 animate-fade-in cursor-default bg-black/40 backdrop-blur-sm"
       />
       <form
@@ -80,7 +91,7 @@ export function SaveDialog({ open, initialName, isUpdate, onSave, onClose }: Sav
           className="w-full rounded-lg border border-border bg-surface-muted px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-accent-500"
         />
         <div className="mt-5 flex justify-end gap-2">
-          <Button type="button" variant="ghost" onClick={onClose}>
+          <Button type="button" variant="ghost" onClick={dismiss} disabled={busy}>
             Abbrechen
           </Button>
           <Button type="submit" disabled={!name.trim() || busy}>

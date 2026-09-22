@@ -22,6 +22,17 @@ export function ConfirmDialog({
   const dialogRef = useRef<HTMLDivElement>(null);
   const cancelRef = useRef<HTMLButtonElement>(null);
   const [busy, setBusy] = useState(false);
+  // Mirrors `busy` for the Escape listener without re-running the open effect.
+  const busyRef = useRef(false);
+  const setBusyBoth = (value: boolean) => {
+    busyRef.current = value;
+    setBusy(value);
+  };
+  // No dismissal while an async save/delete runs, so a stale completion can't
+  // close a dialog that was reopened in the meantime.
+  const dismiss = () => {
+    if (!busyRef.current) onClose();
+  };
 
   useFocusTrap(dialogRef, open);
 
@@ -30,7 +41,7 @@ export function ConfirmDialog({
     // Focus the safe action so Enter can't destroy anything by accident.
     const t = setTimeout(() => cancelRef.current?.focus(), 0);
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape" && !busyRef.current) onClose();
     };
     window.addEventListener("keydown", onKey);
     return () => {
@@ -46,7 +57,7 @@ export function ConfirmDialog({
       <button
         type="button"
         aria-label="Schließen"
-        onClick={onClose}
+        onClick={dismiss}
         className="absolute inset-0 animate-fade-in cursor-default bg-black/40 backdrop-blur-sm"
       />
       <div
@@ -59,7 +70,7 @@ export function ConfirmDialog({
         <h2 className="text-base font-semibold">{title}</h2>
         <p className="mt-2 text-sm text-fg-muted">{message}</p>
         <div className="mt-5 flex justify-end gap-2">
-          <Button ref={cancelRef} type="button" variant="ghost" onClick={onClose}>
+          <Button ref={cancelRef} type="button" variant="ghost" onClick={dismiss} disabled={busy}>
             Abbrechen
           </Button>
           <Button
@@ -68,11 +79,11 @@ export function ConfirmDialog({
             disabled={busy}
             onClick={async () => {
               // Block double taps while an async confirm (e.g. delete) runs.
-              setBusy(true);
+              setBusyBoth(true);
               try {
                 await onConfirm();
               } finally {
-                setBusy(false);
+                setBusyBoth(false);
               }
             }}
           >
