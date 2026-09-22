@@ -1,11 +1,13 @@
-import { CalendarClock, CookingPot, Share2, Wheat } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { CalendarClock, CookingPot, FilePlus2, Save, Share2, Wheat } from "lucide-react";
+import { useCallback, useState } from "react";
 import { getRecipe, saveRecipe } from "../../lib/db/index.ts";
 import { shareDraft } from "../../lib/shareAction.ts";
 import { STYLES } from "../../lib/styles.ts";
 import { Button, SectionCard } from "../../lib/ui/index.ts";
 import { useDraft } from "../../state/DraftContext.tsx";
 import { draftToRecipe } from "../../state/recipeDraft.ts";
+import { useToast } from "../../state/ToastContext.tsx";
+import { ConfirmDialog } from "../recipes/components/ConfirmDialog.tsx";
 import { BallWeight } from "./components/BallWeight.tsx";
 import { Feintuning } from "./components/Feintuning.tsx";
 import { FermentPlan } from "./components/FermentPlan.tsx";
@@ -30,35 +32,37 @@ export function CalculatorPage() {
     startNewRecipe,
   } = useDraft();
 
+  const { showToast } = useToast();
   const [saveOpen, setSaveOpen] = useState(false);
-  const [toast, setToast] = useState("");
-
-  useEffect(() => {
-    if (!toast) return;
-    const t = setTimeout(() => setToast(""), 2500);
-    return () => clearTimeout(t);
-  }, [toast]);
+  const [newOpen, setNewOpen] = useState(false);
 
   const handleSave = useCallback(
     async (name: string) => {
-      const existing = currentRecipeId ? await getRecipe(currentRecipeId) : undefined;
-      const recipe = draftToRecipe(
-        { ...draft, name },
-        { id: existing?.id, createdAt: existing?.createdAt, notes: existing?.notes },
-      );
-      await saveRecipe(recipe);
-      loadRecipe(recipe);
-      setSaveOpen(false);
-      setToast(existing ? "Aktualisiert" : "Gespeichert");
+      try {
+        const existing = currentRecipeId ? await getRecipe(currentRecipeId) : undefined;
+        const recipe = draftToRecipe(
+          { ...draft, name },
+          { id: existing?.id, createdAt: existing?.createdAt, notes: existing?.notes },
+        );
+        await saveRecipe(recipe);
+        loadRecipe(recipe);
+        setSaveOpen(false);
+        showToast(existing ? "Aktualisiert" : "Gespeichert");
+      } catch {
+        // Storage can fail (quota, private mode); keep the dialog open to retry.
+        showToast("Speichern fehlgeschlagen");
+      }
     },
-    [draft, currentRecipeId, loadRecipe],
+    [draft, currentRecipeId, loadRecipe, showToast],
   );
 
   const handleShare = useCallback(async () => {
     const outcome = await shareDraft(draft);
-    if (outcome === "copied") setToast("Link kopiert");
-    else if (outcome === "unavailable") setToast("Teilen nicht möglich");
-  }, [draft]);
+    if (outcome === "copied") showToast("Link kopiert");
+    else if (outcome === "unavailable") showToast("Teilen nicht möglich");
+  }, [draft, showToast]);
+
+  const closeNew = useCallback(() => setNewOpen(false), []);
 
   return (
     <div className="space-y-4 pb-44">
@@ -110,21 +114,36 @@ export function CalculatorPage() {
         yeastPct={computation.yeastPct}
         yeastType={draft.yeast.type}
         yeastIsAuto={draft.yeast.mode === "auto"}
-        actions={
+        quickActions={
           <>
-            <Button onClick={() => setSaveOpen(true)}>
-              {currentRecipeId ? "Aktualisieren" : "Speichern"}
+            <Button
+              size="sm"
+              variant="ghost"
+              aria-label="Teilen"
+              title="Teilen"
+              onClick={handleShare}
+              className="h-11 w-11 px-0"
+            >
+              <Share2 size={18} aria-hidden="true" />
             </Button>
-            <Button variant="secondary" onClick={handleShare}>
-              <Share2 size={16} aria-hidden="true" />
-              Teilen
+            <Button
+              size="sm"
+              aria-label={currentRecipeId ? "Aktualisieren" : "Speichern"}
+              title={currentRecipeId ? "Aktualisieren" : "Speichern"}
+              onClick={() => setSaveOpen(true)}
+              className="h-11 w-11 px-0"
+            >
+              <Save size={18} aria-hidden="true" />
             </Button>
-            {currentRecipeId ? (
-              <Button variant="ghost" onClick={() => startNewRecipe(draft.style)}>
-                Neu
-              </Button>
-            ) : null}
           </>
+        }
+        actions={
+          currentRecipeId ? (
+            <Button variant="secondary" onClick={() => setNewOpen(true)}>
+              <FilePlus2 size={16} aria-hidden="true" />
+              Neu
+            </Button>
+          ) : null
         }
       />
 
@@ -136,14 +155,17 @@ export function CalculatorPage() {
         onClose={() => setSaveOpen(false)}
       />
 
-      {toast ? (
-        <div
-          role="status"
-          className="fixed inset-x-0 top-16 z-50 mx-auto w-fit rounded-full bg-fg px-4 py-2 text-sm font-medium text-surface shadow-lg"
-        >
-          {toast}
-        </div>
-      ) : null}
+      <ConfirmDialog
+        open={newOpen}
+        title="Neues Rezept starten?"
+        message={`„${draft.name}" bleibt gespeichert, nicht gespeicherte Änderungen gehen verloren.`}
+        confirmLabel="Neu starten"
+        onConfirm={() => {
+          setNewOpen(false);
+          startNewRecipe(draft.style);
+        }}
+        onClose={closeNew}
+      />
     </div>
   );
 }

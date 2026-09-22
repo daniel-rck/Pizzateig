@@ -1,7 +1,13 @@
 import { ChevronUp } from "lucide-react";
-import { type ReactNode, useState } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 import type { Amounts } from "../../../lib/dough.ts";
-import { formatGrams, formatHours, formatPercent, formatTemp } from "../../../lib/format.ts";
+import {
+  formatGrams,
+  formatHours,
+  formatPercent,
+  formatTemp,
+  formatYeastGrams,
+} from "../../../lib/format.ts";
 import type { FermentConfig, YeastType } from "../../../types/recipe.ts";
 
 type ResultSheetProps = {
@@ -10,6 +16,9 @@ type ResultSheetProps = {
   yeastPct: number;
   yeastType: YeastType;
   yeastIsAuto: boolean;
+  /** Always-visible compact actions in the sheet's header row. */
+  quickActions?: ReactNode;
+  /** Extra actions shown only in the expanded sheet. */
   actions?: ReactNode;
 };
 
@@ -49,47 +58,70 @@ export function ResultSheet({
   yeastPct,
   yeastType,
   yeastIsAuto,
+  quickActions,
   actions,
 }: ResultSheetProps) {
   const [expanded, setExpanded] = useState(false);
 
+  // Escape collapses the expanded sheet (dialogs on top handle their own Escape).
+  useEffect(() => {
+    if (!expanded) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && !document.querySelector('[aria-modal="true"]')) {
+        setExpanded(false);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [expanded]);
+
   return (
-    <div className="fixed inset-x-0 bottom-16 z-30 md:bottom-0">
+    // Sits on top of the mobile bottom nav (4rem + iOS safe area) and, from md
+    // up, right of the 14rem sidebar instead of underneath it.
+    <div className="fixed inset-x-0 bottom-[calc(4rem+env(safe-area-inset-bottom))] z-30 md:bottom-0 md:left-56">
       <div className="container mx-auto max-w-4xl px-4 md:px-4">
         <div className="overflow-hidden rounded-t-2xl border border-border border-b-0 bg-surface/90 shadow-warm backdrop-blur-md">
           <div
             aria-hidden="true"
             className="h-1 w-full bg-gradient-to-r from-accent-500 to-accent-warm"
           />
-          <button
-            type="button"
-            aria-expanded={expanded}
-            aria-label={expanded ? "Ergebnis einklappen" : "Ergebnis aufziehen"}
-            onClick={() => setExpanded((e) => !e)}
-            className="flex w-full items-center justify-between gap-3 px-4 pt-2 pb-3"
-          >
-            <span className="flex flex-col items-stretch gap-1 text-left">
-              <span aria-hidden="true" className="mx-auto h-1 w-9 rounded-full bg-border" />
-              <span className="flex items-baseline gap-2">
-                <span className="text-xl font-bold tabular-nums tracking-tight text-fg">
-                  {formatGrams(amounts.totalDoughG)} Teig
+          <div className="flex items-center gap-1 pr-3">
+            <button
+              type="button"
+              aria-expanded={expanded}
+              aria-label={expanded ? "Ergebnis einklappen" : "Ergebnis aufziehen"}
+              onClick={() => setExpanded((e) => !e)}
+              className="flex min-w-0 flex-1 items-center justify-between gap-3 py-2 pl-4 pr-1"
+            >
+              <span className="flex flex-col items-stretch gap-1 text-left">
+                <span aria-hidden="true" className="mx-auto h-1 w-9 rounded-full bg-border" />
+                <span className="flex items-baseline gap-2">
+                  <span className="text-xl font-bold tabular-nums tracking-tight text-fg">
+                    {formatGrams(amounts.totalDoughG)} Teig
+                  </span>
+                </span>
+                <span className="flex flex-wrap gap-1.5 text-xs">
+                  <span className="rounded-full bg-surface-sunken px-2 py-0.5 font-medium tabular-nums text-fg-muted">
+                    {formatGrams(amounts.flourG)} Mehl
+                  </span>
+                  <span className="rounded-full bg-surface-sunken px-2 py-0.5 font-medium tabular-nums text-fg-muted">
+                    {formatGrams(amounts.waterG)} Wasser
+                  </span>
+                  <span className="rounded-full bg-accent-50 px-2 py-0.5 font-medium tabular-nums text-accent-700 dark:bg-accent-900/30 dark:text-accent-300">
+                    {formatYeastGrams(amounts.yeastG)} {YEAST_NAME[yeastType]}
+                  </span>
                 </span>
               </span>
-              <span className="flex flex-wrap gap-1.5 text-xs">
-                <span className="rounded-full bg-surface-sunken px-2 py-0.5 font-medium tabular-nums text-fg-muted">
-                  {formatGrams(amounts.flourG)} Mehl
-                </span>
-                <span className="rounded-full bg-surface-sunken px-2 py-0.5 font-medium tabular-nums text-fg-muted">
-                  {formatGrams(amounts.waterG)} Wasser
-                </span>
-              </span>
-            </span>
-            <ChevronUp
-              size={20}
-              aria-hidden="true"
-              className={`shrink-0 text-fg-muted transition-transform duration-[var(--duration-base)] ease-[var(--ease-out-quart)] ${expanded ? "rotate-180" : ""}`}
-            />
-          </button>
+              <ChevronUp
+                size={20}
+                aria-hidden="true"
+                className={`shrink-0 text-fg-muted transition-transform duration-[var(--duration-base)] ease-[var(--ease-out-quart)] ${expanded ? "rotate-180" : ""}`}
+              />
+            </button>
+            {quickActions ? (
+              <div className="flex shrink-0 items-center gap-1">{quickActions}</div>
+            ) : null}
+          </div>
 
           {expanded ? (
             <div className="max-h-[60vh] animate-fade-in space-y-4 overflow-y-auto border-t border-border px-4 py-3 text-sm">
@@ -101,7 +133,7 @@ export function ResultSheet({
                 {amounts.oilG > 0 ? <Row label="Öl" value={formatGrams(amounts.oilG)} /> : null}
                 <Row
                   label={YEAST_NAME[yeastType]}
-                  value={`${formatGrams(amounts.yeastG)} · ${formatPercent(yeastPct)}`}
+                  value={`${formatYeastGrams(amounts.yeastG)} · ${formatPercent(yeastPct)}`}
                 />
                 {yeastIsAuto ? (
                   <p className="pt-1 text-xs text-fg-subtle">Hefe: Vorschlag, justierbar.</p>

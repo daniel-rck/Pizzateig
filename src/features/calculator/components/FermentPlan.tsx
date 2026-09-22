@@ -38,7 +38,11 @@ function previewYeastG(draft: RecipeDraft, config: FermentConfig): number {
 /** Ferment plan: preset cards with inline yeast + a custom slider panel (spec §4.1). */
 export function FermentPlan({ draft, onSelectPreset, onCustomChange }: FermentPlanProps) {
   const activePreset = matchFermentPreset(draft.ferment);
-  const [customOpen, setCustomOpen] = useState(activePreset === null);
+  const [customToggled, setCustomToggled] = useState(false);
+  // A plan that matches no preset always shows its sliders; otherwise the
+  // panel is a plain disclosure. Preset highlighting follows the values alone,
+  // so external resets ("Neu", loading a recipe) can't leave a stale state.
+  const customOpen = customToggled || activePreset === null;
 
   const previewYeast = useMemo(
     () =>
@@ -67,7 +71,7 @@ export function FermentPlan({ draft, onSelectPreset, onCustomChange }: FermentPl
       <div className="grid grid-cols-3 gap-2">
         {FERMENT_PRESET_ORDER.map((id) => {
           const preset = FERMENT_PRESETS[id];
-          const active = activePreset === id && !customOpen;
+          const active = activePreset === id;
           return (
             <button
               key={id}
@@ -75,7 +79,7 @@ export function FermentPlan({ draft, onSelectPreset, onCustomChange }: FermentPl
               aria-pressed={active}
               onClick={() => {
                 tick();
-                setCustomOpen(false);
+                setCustomToggled(false);
                 onSelectPreset(preset.config);
               }}
               className={`flex flex-col rounded-xl border p-3 text-left transition-[background-color,border-color,box-shadow,transform] duration-[var(--duration-fast)] ease-[var(--ease-out-quart)] active:scale-[0.98] ${
@@ -102,9 +106,9 @@ export function FermentPlan({ draft, onSelectPreset, onCustomChange }: FermentPl
       <button
         type="button"
         aria-expanded={customOpen}
-        onClick={() => setCustomOpen((o) => !o)}
+        onClick={() => setCustomToggled(!customOpen)}
         className={`w-full rounded-xl border p-3 text-left text-sm font-medium transition-[background-color,border-color,box-shadow] duration-[var(--duration-fast)] ease-[var(--ease-out-quart)] ${
-          customOpen
+          activePreset === null
             ? "border-accent-500 bg-accent-50 shadow-sm dark:bg-accent-900/30"
             : "border-border bg-surface-muted hover:bg-surface-sunken"
         }`}

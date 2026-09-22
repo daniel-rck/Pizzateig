@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button, useFocusTrap } from "../../../lib/ui/index.ts";
 
 type ConfirmDialogProps = {
@@ -6,7 +6,7 @@ type ConfirmDialogProps = {
   title: string;
   message: string;
   confirmLabel?: string;
-  onConfirm: () => void;
+  onConfirm: () => Promise<void> | void;
   onClose: () => void;
 };
 
@@ -21,6 +21,7 @@ export function ConfirmDialog({
 }: ConfirmDialogProps) {
   const dialogRef = useRef<HTMLDivElement>(null);
   const cancelRef = useRef<HTMLButtonElement>(null);
+  const [busy, setBusy] = useState(false);
 
   useFocusTrap(dialogRef, open);
 
@@ -61,7 +62,20 @@ export function ConfirmDialog({
           <Button ref={cancelRef} type="button" variant="ghost" onClick={onClose}>
             Abbrechen
           </Button>
-          <Button type="button" variant="danger" onClick={onConfirm}>
+          <Button
+            type="button"
+            variant="danger"
+            disabled={busy}
+            onClick={async () => {
+              // Block double taps while an async confirm (e.g. delete) runs.
+              setBusy(true);
+              try {
+                await onConfirm();
+              } finally {
+                setBusy(false);
+              }
+            }}
+          >
             {confirmLabel}
           </Button>
         </div>

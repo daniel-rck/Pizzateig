@@ -4,6 +4,31 @@ All notable changes to this project are documented here. The format loosely
 follows Keep a Changelog; the app itself is unversioned (`0.0.0`, see
 `docs/specs/` for the rationale) — entries are grouped by milestone.
 
+## v1.0.2 — UX-Politur & Updates
+
+### Fixed
+
+- The yeast amount in the result sheet was rounded to whole grams, so small
+  doses (e.g. dry yeast for a two-day plan) showed as "0 g"; it now uses one
+  decimal like the preset previews.
+- The result sheet respects the iOS safe area and no longer covers the bottom
+  nav; on desktop it sits beside the sidebar instead of over it.
+- Saving or deleting a recipe no longer fails silently on storage errors; a
+  toast reports it, and double submits are blocked while IndexedDB writes.
+- Ferment preset highlighting follows the plan values, so "Neu" or opening
+  "Eigener Plan" can no longer leave no preset marked.
+
+### Changed
+
+- The collapsed result sheet shows the yeast amount and has Speichern/Teilen
+  icon buttons — no need to expand it first. Escape collapses it.
+- "Neu" asks before discarding the loaded recipe's unsaved changes.
+- Toasts are app-wide: loading and deleting a recipe now confirm too.
+- The delete button in the recipe list has a 44 px touch target.
+- Dependencies bumped within their ranges (React 19.3, Vite 8.3, lucide,
+  react-router, Biome, wrangler, types); a stale nested Vite copy under
+  vitest was dropped from the lockfile. Vitest 5 is left for a separate step.
+
 ## v1.0.1 — Härtung & Politur
 
 ### Fixed

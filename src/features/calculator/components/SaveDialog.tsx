@@ -6,7 +6,7 @@ type SaveDialogProps = {
   initialName: string;
   /** True when overwriting an already-stored recipe. */
   isUpdate: boolean;
-  onSave: (name: string) => void;
+  onSave: (name: string) => Promise<void> | void;
   onClose: () => void;
 };
 
@@ -16,6 +16,7 @@ export function SaveDialog({ open, initialName, isUpdate, onSave, onClose }: Sav
   const inputRef = useRef<HTMLInputElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
   const [name, setName] = useState(initialName);
+  const [busy, setBusy] = useState(false);
 
   useFocusTrap(formRef, open);
 
@@ -35,11 +36,17 @@ export function SaveDialog({ open, initialName, isUpdate, onSave, onClose }: Sav
 
   if (!open) return null;
 
-  const submit = (e: FormEvent) => {
+  const submit = async (e: FormEvent) => {
     e.preventDefault();
     const trimmed = name.trim();
-    if (!trimmed) return;
-    onSave(trimmed);
+    if (!trimmed || busy) return;
+    // Guard against double submits while IndexedDB is writing.
+    setBusy(true);
+    try {
+      await onSave(trimmed);
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
@@ -76,7 +83,7 @@ export function SaveDialog({ open, initialName, isUpdate, onSave, onClose }: Sav
           <Button type="button" variant="ghost" onClick={onClose}>
             Abbrechen
           </Button>
-          <Button type="submit" disabled={!name.trim()}>
+          <Button type="submit" disabled={!name.trim() || busy}>
             Speichern
           </Button>
         </div>
